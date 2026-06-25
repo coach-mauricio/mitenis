@@ -2599,7 +2599,7 @@ function buildCoach(){
 
   const data=players.map(p=>{
     const cur=lastInMonth(p,curMonth);
-    const av={}; areas.forEach(a=>av[a]=cur?avgLvlKeys(cur,AREA_KEYS[a]):0);
+    const av={}; areas.forEach(a=>av[a]=areaAvgScope(p,curMonth,a));
     const tv=areas.map(a=>av[a]).filter(v=>v>0); const overall=tv.length?tv.reduce((x,y)=>x+y,0)/tv.length:0;
     const obs=cur&&(cur[COL.obs_profe]||'').trim()!=='';
     return {p, av, overall, obs, at:attendanceFor(p,curMonth)};
@@ -2610,7 +2610,7 @@ function buildCoach(){
 
   let pAvg={}, pTot=0, obsPrev=0;
   if(prevMonth){
-    const pd=players.map(p=>{ const s=lastInMonth(p,prevMonth); const av={}; areas.forEach(a=>av[a]=s?avgLvlKeys(s,AREA_KEYS[a]):0); return {av, obs:s&&(s[COL.obs_profe]||'').trim()!==''}; });
+    const pd=players.map(p=>{ const s=lastInMonth(p,prevMonth); const av={}; areas.forEach(a=>av[a]=areaAvgScope(p,prevMonth,a)); return {av, obs:s&&(s[COL.obs_profe]||'').trim()!==''}; });
     areas.forEach(a=>{ const v=pd.map(d=>d.av[a]).filter(x=>x>0); pAvg[a]=v.length?v.reduce((x,y)=>x+y,0)/v.length:0; });
     const ptv=areas.map(a=>pAvg[a]).filter(v=>v>0); pTot=ptv.length?ptv.reduce((x,y)=>x+y,0)/ptv.length:0;
     obsPrev=pd.filter(d=>d.obs).length;
@@ -2689,7 +2689,7 @@ function buildCoach(){
   const hexA=(h,a)=>{const n=(h||'').replace('#','');const r=parseInt(n.slice(0,2),16)||0,g=parseInt(n.slice(2,4),16)||0,b=parseInt(n.slice(4,6),16)||0;return 'rgba('+r+','+g+','+b+','+a+')';};
   const catData=cats.map((ct,i)=>{
     const studs=allPlayersList.filter(p=>catOf(p)===ct);
-    const dd=areas.map(a=>{ const vals=studs.map(p=>{const s=lastInMonth(p,curMonth); return s?avgLvlKeys(s,AREA_KEYS[a]):0;}).filter(v=>v>0); return vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:0; });
+    const dd=areas.map(a=>{ const vals=studs.map(p=>areaAvgScope(p,curMonth,a)).filter(v=>v>0); return vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:0; });
     return {label:ct, data:dd, color:catColorHex(ct,i)};
   });
 
@@ -3366,10 +3366,27 @@ function buildMonthReportHTML(name, mk){
   const fortItems=fortCol.length?splitItems(fortCol[fortCol.length-1][COL.fortalezas]):[];
   const aspCol=ms.filter(s=>(s[COL.aspecto]||'').trim()!=='');
   const aspText=aspCol.length?(aspCol[aspCol.length-1][COL.aspecto]||'').trim():'';
+  const aspItems=aspText?splitItems(aspText):[];
 
   // OBSERVACIÓN DEL PROFE (más reciente con texto)
-  const obsList=ms.filter(s=>(s[COL.obs_profe]||'').trim()!=='');
-  const coachQuote=obsList.length?(obsList[obsList.length-1][COL.obs_profe]||'').trim():'';
+  // Observaciones del Profe del mes, en orden cronológico, conectadas como un texto corrido
+  const obsAll=ms.filter(s=>(s[COL.obs_profe]||'').trim()!=='').map(s=>(s[COL.obs_profe]||'').trim());
+  const _connMids=['Luego','Más adelante','En el transcurso del mes','A continuación','Con el correr de las semanas'];
+  const _fname=(name.split(' ')[0]||'').toLowerCase();
+  const _lcFirst=(txt)=>{
+    if(!txt) return txt;
+    const fw=(txt.split(/\s+/)[0]||'').replace(/[^A-Za-zÀ-ÿ]/g,'').toLowerCase();
+    if(fw && fw===_fname) return txt;            // mantiene el nombre del alumno en mayúscula
+    return txt.charAt(0).toLowerCase()+txt.slice(1);
+  };
+  const coachQuote = obsAll.length<=1
+    ? (obsAll[0]||'')
+    : obsAll.map((txt,i)=>{
+        const conn = i===0 ? 'Para comenzar el mes, '
+          : (i===obsAll.length-1 ? 'Hacia el cierre del mes, ' : _connMids[(i-1)%_connMids.length]+', ');
+        let t=_lcFirst(txt.trim()); if(t && !/[.!?…]$/.test(t)) t+='.';
+        return conn + t;
+      }).join(' ');
 
   // ÚLTIMA SESIÓN
   const last=ms.length?ms[ms.length-1]:null;
@@ -3619,8 +3636,8 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a3d2a;color:#1326
       <div class="panel">
         <div class="ph"><span class="ph-ic">🎯</span><span class="ph-tx">Aspecto principal a trabajar</span></div>
         <div class="pb">
-        ${aspText
-          ? `<div class="foco-d"><strong>${esc(aspText)}</strong></div>`
+        ${aspItems.length
+          ? aspItems.map(t=>`<div class="str"><div class="str-ic">🎯</div><div><div class="str-t">${esc(t)}</div></div></div>`).join('')
           : (foco?`<div class="foco-t">${esc(foco.nombre)} <span style="font-size:11px;font-weight:700;color:${foco.area.col};">· ${esc(foco.area.nombre)}</span></div>
           <div class="foco-d">${esc(foco.desc||'Foco de trabajo para el próximo período.')}</div>`:'<div class="foco-d">Aún sin datos suficientes este mes.</div>')}
         </div>
