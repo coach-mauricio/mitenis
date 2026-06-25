@@ -2982,7 +2982,8 @@ function buildRubrica(){
   const _months=[...new Set(playerSessions.map(monthKey).filter(Boolean))].sort();
   const _curMk=last?monthKey(last):'';
   const _prevMk=_months.indexOf(_curMk)>0?_months[_months.indexOf(_curMk)-1]:null;
-  const prevLast=(_prevMk?playerSessions.filter(s=>monthKey(s)===_prevMk):[]).slice(-1)[0]||null;
+  const prevSessList = _prevMk?playerSessions.filter(s=>monthKey(s)===_prevMk):[];
+  const latestIn=(list,key)=>{ for(let i=list.length-1;i>=0;i--){ const lv=toLvl(list[i][COL[key]]); if(lv>0) return lv; } return 0; };
   const bench=calcBench(currentPlayer);
   const info=getInfo(currentPlayer);
   const catName=info?info[INFO.categoria]:'';
@@ -2992,11 +2993,11 @@ function buildRubrica(){
   const cards=areas.map(a=>{
     const grupos=RESUMEN_GROUPS[a.id];
     const rows=grupos.map(g=>{
-      const arr=g.keys.map(k=>toLvl(last[COL[k]])).filter(v=>v>0);
+      const arr=g.keys.map(k=>latestIn(fsess,k)).filter(v=>v>0);
       if(!arr.length) return '';
       const p=arr.reduce((x,y)=>x+y,0)/arr.length;
       const lv=Math.round(p);
-      let prevLv=0; if(prevLast){ const pa=g.keys.map(k=>toLvl(prevLast[COL[k]])).filter(v=>v>0); if(pa.length) prevLv=Math.round(pa.reduce((x,y)=>x+y,0)/pa.length); }
+      let prevLv=0; { const pa=g.keys.map(k=>latestIn(prevSessList,k)).filter(v=>v>0); if(pa.length) prevLv=Math.round(pa.reduce((x,y)=>x+y,0)/pa.length); }
       const rise = prevLv>0 && lv>prevLv;
       const q=PERF_Q[g.nombre]||'';
       return `<div class="ball-item">
@@ -3033,7 +3034,8 @@ function buildRubrica(){
     </div>
     <div class="acc-body"><div class="acc-body-inner">${evoInner}</div></div>
   </div>`;
-  el.innerHTML = `<button class="lg-info-btn" onclick="openRendInfo()">ℹ️ ¿Cómo se mide Mi Tenis?</button>` + monthChipsHTML() + legend + `<div class="perf-grid">${cards}</div>` + evoHTML;
+  const perfHTML = cards.replace(/\s/g,'') ? `<div class="perf-grid">${cards}</div>` : `<div class="empty" style="color:var(--muted);">Todavía no hay evaluaciones de rúbrica cargadas para este mes.</div>`;
+  el.innerHTML = `<button class="lg-info-btn" onclick="openRendInfo()">ℹ️ ¿Cómo se mide Mi Tenis?</button>` + monthChipsHTML() + legend + perfHTML + evoHTML;
   ldEl.style.display='none'; el.style.display='block';
   // Gráfico de evolución — usa TODAS las sesiones, sin filtro de mes
   if(charts['evolucion']){ try{charts['evolucion'].destroy();}catch(e){} }
