@@ -100,6 +100,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* HEADER */
 .app-header{background:#0d4b34;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(10,61,42,.28);}
 .header-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 0;}
+#app .header-top,#coach .header-top,#circuito .header-top{justify-content:flex-start;gap:16px;}
+#app .header-top > div[style],#coach .header-top > div[style],#circuito .header-top > div[style]{display:none;}
 .header-back{background:rgba(255,255,255,.14);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;color:rgba(255,255,255,.9);font-size:12px;font-family:'Inter',sans-serif;transition:background .15s;}
 .header-back:hover{background:rgba(255,255,255,.24);}
 .header-player{display:flex;align-items:center;gap:10px;}
@@ -121,7 +123,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* CARDS */
 .card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
-.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#ffde59;background:#0a513a;padding:8px 12px;border-radius:9px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
 .card-title::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* FICHA */
@@ -395,7 +397,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* Rendimiento — barras */
 .perf-grid{display:grid;grid-template-columns:1fr;gap:14px;}
 .perf-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
-.perf-card-title{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.perf-card-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#ffde59;background:#0a513a;padding:8px 12px;border-radius:9px;margin-bottom:16px;display:flex;align-items:center;gap:6px;}
 .perf-row{margin-bottom:16px;}
 .perf-row:last-child{margin-bottom:0;}
 .perf-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;}
@@ -416,7 +418,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .top-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch;margin-bottom:14px;}
 .top-row > .card{margin:0;height:100%;}
 @media(max-width:720px){.top-row{grid-template-columns:1fr;}}
-.radar-range{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.radar-range{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:2px;}
 .radar-range-btn{flex:1;min-width:96px;padding:8px 8px;border-radius:9px;border:1px solid var(--border);background:var(--surf);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
 .radar-range-btn:hover{border-color:var(--blue);color:var(--blue);}
 .radar-range-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;}
@@ -859,8 +861,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .filter-acc .acc-title{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--blue);display:inline-flex;align-items:center;gap:4px;}
 .filter-acc .acc-sub{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px;}
 .filter-acc .acc-chevron{color:var(--muted);}
-.filter-acc .acc-body{position:absolute;top:calc(100% + 2px);left:0;z-index:130;min-width:210px;max-width:min(90vw,330px);background:#0d5230;border:1px solid rgba(255,255,255,.2);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.42);max-height:0;overflow:hidden;transition:max-height .28s ease;}
-.filter-acc.open .acc-body{max-height:min(60vh,360px);overflow-y:auto;}
+.filter-acc .acc-body{position:absolute;top:calc(100% + 2px);left:0;z-index:130;min-width:210px;max-width:min(90vw,330px);background:#0d5230;border:1px solid rgba(255,255,255,.2);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.42);max-height:0;overflow:hidden;transition:max-height .28s ease;border-color:transparent;}
+.filter-acc.open .acc-body{max-height:min(60vh,360px);overflow-y:auto;border-color:rgba(255,255,255,.2);}
 .filter-acc .acc-body-inner{padding:12px 14px;display:flex;flex-wrap:wrap;gap:8px;}
 /* chips: fuente blanca; el seleccionado queda con fondo blanco */
 .filter-acc .mf-chip{background:transparent;border-color:rgba(255,255,255,.55);color:#fff;}
@@ -1069,7 +1071,7 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
   <header class="app-header coach-header">
     <div class="header-top">
       <button class="header-back" onclick="closeCircuito()">← Volver</button>
-      <div class="header-player"><div class="header-name">🎾 Circuito interno</div></div>
+      <div class="header-player"><div class="header-name">🏆 Circuito interno</div></div>
       <div style="width:60px;"></div>
     </div>
     <nav class="app-tabs" id="tabs-circuito">
@@ -3048,7 +3050,7 @@ function buildRubrica(){
     if(!rows) return '';
     return `<div class="perf-card"><div class="perf-card-title">${AREA_META[a.id].emoji} ${a.nombre}</div>${rows}</div>`;
   }).join('');
-  const legend=`<div class="sem-legend" style="margin-bottom:14px;align-items:center;">
+  const legend=`<div class="sem-legend" style="margin:18px 0 14px;align-items:center;">
       <span class="sem-leg-label">Niveles</span>
       <span class="sem-leg" style="background:var(--n1);color:#161616;">👍 Bien</span>
       <span class="sem-leg" style="background:var(--n2);color:#161616;">👍👍 Muy Bien</span>
@@ -3297,7 +3299,7 @@ function buildHistorial(){
   const months=Object.keys(byMonth).sort();
   const pl=currentPlayer.replace(/'/g,"\\'");
   const infoBtn=`<button class="lg-info-btn" onclick="openRegistroInfo()">ℹ️ ¿Cómo funcionan los Informes?</button>`;
-  const legend=`<div class="cal-legend" style="margin:-2px 0 12px;">
+  const legend=`<div class="cal-legend" style="margin:18px 0 12px;">
     <span><span class="lg-swatch" style="background:var(--ball);"></span> Descargar reporte (mes cerrado)</span>
     <span><span class="lg-swatch" style="background:var(--surf2);border:1px dashed var(--border);"></span> Reporte 🔒</span>
   </div>`;
