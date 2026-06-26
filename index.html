@@ -2961,22 +2961,36 @@ function buildResumen(){
 
 // ══════════════════════════════════════
 // Radar de Mi Perfil — rango seleccionable (30 días / 3 meses / desde el inicio)
-function profileRadarData(range){
-  const sess=playerSessions||[]; let list; const now=new Date();
-  if(range==='30d'){ const cut=new Date(now); cut.setDate(cut.getDate()-30); list=sess.filter(s=>{const d=new Date(parseDate(s[COL.fecha])+'T12:00:00'); return !isNaN(d)&&d>=cut;}); }
-  else if(range==='3m'){ const cut=new Date(now); cut.setMonth(cut.getMonth()-3); list=sess.filter(s=>{const d=new Date(parseDate(s[COL.fecha])+'T12:00:00'); return !isNaN(d)&&d>=cut;}); }
-  else { list=sess; }
-  return ['tecnica','tactica','fisico','mental'].map(a=>areaAvgForSessions(list,a));
+function profileRadarWindows(range){
+  const sess=playerSessions||[]; const now=new Date();
+  const dateOf=s=>new Date(parseDate(s[COL.fecha])+'T12:00:00');
+  const between=(a,b)=>sess.filter(s=>{const d=dateOf(s); return !isNaN(d)&&d>=a&&d<b;});
+  const end=new Date(now.getTime()+86400000); // incluye hoy
+  if(range==='all') return {cur:sess, prev:null, curLbl:'Desde el inicio', prevLbl:null};
+  let curStart, prevStart, labels;
+  if(range==='30d'){
+    curStart=new Date(now); curStart.setDate(curStart.getDate()-30);
+    prevStart=new Date(now); prevStart.setDate(prevStart.getDate()-60);
+    labels=['Últimos 30 días','30 días previos'];
+  } else {
+    curStart=new Date(now); curStart.setMonth(curStart.getMonth()-3);
+    prevStart=new Date(now); prevStart.setMonth(prevStart.getMonth()-6);
+    labels=['Últimos 3 meses','3 meses previos'];
+  }
+  return {cur:between(curStart,end), prev:between(prevStart,curStart), curLbl:labels[0], prevLbl:labels[1]};
 }
+function _radarArr(list){ return ['tecnica','tactica','fisico','mental'].map(a=>areaAvgForSessions(list,a)); }
 function renderProfileRadar(){
   const cv=document.getElementById('ch-radar'); if(!cv||typeof Chart==='undefined') return;
   if(charts['radar']){ try{charts['radar'].destroy();}catch(e){} }
-  const lblMap={'30d':'Últimos 30 días','3m':'Últimos 3 meses','all':'Desde el inicio'};
-  const data=profileRadarData(radarRange);
+  const w=profileRadarWindows(radarRange);
+  const datasets=[];
+  if(w.prev && w.prev.length){
+    datasets.push({label:w.prevLbl,data:_radarArr(w.prev),borderColor:'rgba(107,111,138,0.6)',backgroundColor:'rgba(107,111,138,0.06)',borderDash:[5,4],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'rgba(107,111,138,0.7)'});
+  }
+  datasets.push({label:w.curLbl,data:_radarArr(w.cur),borderColor:'#0a513a',backgroundColor:'rgba(10,81,58,0.16)',borderWidth:2,pointRadius:5,pointBackgroundColor:'#0a513a',pointBorderColor:'#0a513a'});
   charts['radar']=new Chart(cv,{ type:'radar',
-    data:{labels:['Técnica','Táctica','Físico','Mental'],datasets:[
-      {label:lblMap[radarRange]||'',data,borderColor:'#0a513a',backgroundColor:'rgba(10,81,58,0.16)',borderWidth:2,pointRadius:5,pointBackgroundColor:'#0a513a',pointBorderColor:'#0a513a'}
-    ]},
+    data:{labels:['Técnica','Táctica','Físico','Mental'],datasets},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:true,position:'bottom',labels:{color:'#20223a',font:{size:12},boxWidth:10,padding:14}},
         tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${(c.raw||0).toFixed(1)} / 3`}}},
