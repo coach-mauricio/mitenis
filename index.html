@@ -126,6 +126,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#ffde59;background:#0a513a;padding:8px 12px;border-radius:9px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
 #content-liga .card-title{color:#fff;}
 #content-resumen .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
+.cz-radar, .cz-rank-card{overflow:hidden;}
+.cz-radar > .card-title, .cz-rank-card > .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
 .lvl-pill{display:inline-block;padding:4px 14px;border-radius:999px;font-size:15px;font-weight:800;}
 /* Mi Perfil v6: info sola + fila 2 (Desempeño + Asistencia) */
 .perfil-info-solo{margin-bottom:14px;}
@@ -441,7 +443,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .ph-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
 .ph-name{font-size:21px;font-weight:900;text-transform:uppercase;line-height:1.08;}
 .ph-cat{display:inline-block;align-self:flex-start;margin-top:6px;padding:2px 11px;border-radius:99px;font-size:10px;font-weight:800;}
-.ph-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:9px 16px;margin-top:13px;}
+.ph-grid{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:13px;align-items:flex-start;}
+.ph-it{min-width:0;}
+.ph-it-obj{flex:1 1 200px;}
 .ph-it label{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.55);margin-bottom:2px;}
 .ph-it span{font-size:13px;font-weight:700;color:#fff;}
 .ph-obj{margin-top:11px;}
@@ -473,7 +477,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .ph-ix{padding-left:13px;}
   .ph-gauge{width:90px;height:90px;}
   .ph-gauge-n{font-size:24px;}
-  .ph-grid{grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:7px 12px;}
+  .ph-grid{gap:8px 14px;} .ph-it-obj{flex:1 1 100%;}
 }
 
 .metric-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:left;}
@@ -1151,8 +1155,8 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
       <div style="width:60px;"></div>
     </div>
     <nav class="app-tabs" id="tabs-coach">
-      <button class="tab-btn active" onclick="switchCoachTab('resumen',this)">Mi Resumen</button>
-      <button class="tab-btn" onclick="switchCoachTab('planificacion',this)">Mi Planificación</button>
+      <button class="tab-btn active" onclick="switchCoachTab('resumen',this)">Resumen</button>
+      <button class="tab-btn" onclick="switchCoachTab('planificacion',this)">Planificación</button>
     </nav>
   </header>
   <main class="app-content">
@@ -2404,12 +2408,11 @@ function buildCoachPlanificacion(){
     return;
   }
   const filters=`<div class="plan-filters">
-      <input class="plan-search" type="search" placeholder="🔎 Buscar actividad…" value="${(planFilters.q||'').replace(/"/g,'&quot;')}" oninput="setPlanSearch(this.value)">
       ${planFilterAcc('golpe','Golpe','🎾')}
       ${planFilterAcc('categoria','Categoría','🏷️')}
       ${planFilterAcc('nivel','Nivel','📶')}
     </div>`;
-  el.innerHTML=`<div class="cz-h">📋 Actividades para planificar clases</div>${filters}<div class="plan-count" id="plan-count"></div><div id="plan-list-wrap"></div>`;
+  el.innerHTML=`${filters}<div class="plan-count" id="plan-count"></div><div id="plan-list-wrap"></div>`;
   renderPlanList();
 }
 // ══════════════════════════════════════
@@ -2597,9 +2600,9 @@ function buildCircuitoTorneos(){
   </div>`;
 
   const cards = `<div class="metrics-row cz-kpis">
-    <div class="metric-card"><div class="mc-label">🏆 Torneos disputados</div><div class="mc-value">${totT}</div>${delta(kT(curM),prevM?kT(prevM):0)}</div>
+    <div class="metric-card"><div class="mc-label">🏆 Torneos</div><div class="mc-value">${totT}</div>${delta(kT(curM),prevM?kT(prevM):0)}</div>
     <div class="metric-card"><div class="mc-label">🎾 Partidos jugados</div><div class="mc-value">${totM}</div>${delta(kM(curM),prevM?kM(prevM):0)}</div>
-    <div class="metric-card"><div class="mc-label">👥 Jugadores activos</div><div class="mc-value">${totP}</div>${delta(kP(curM),prevM?kP(prevM):0)}</div>
+    <div class="metric-card"><div class="mc-label">👥 Jugadores</div><div class="mc-value">${totP}</div>${delta(kP(curM),prevM?kP(prevM):0)}</div>
     ${nextCard}
   </div>`;
 
@@ -2780,11 +2783,10 @@ function buildCoach(){
       <div class="cz-av" style="background:${avatarColor(d.p)};"></div>
       <div class="cz-name-cell">
         <div class="cz-name">${d.p}</div>
-        ${actLeaderSet.has(d.p)?'<div class="cz-act-tag">🏅 Jugador con más actitud del mes</div>':''}
       </div>
       <div class="cz-ind">
         <div class="cz-ind-row"><span class="cz-ind-lbl">Promedio</span><span class="cz-ind-val">${d.overall>0?d.overall.toFixed(1):'—'}<span>/3</span></span></div>
-        <div class="cz-ind-row"><span class="cz-ind-lbl">Asistencia</span><span class="cz-ind-val cz-ind-val-sm ${a?(a.met?'ok':'low'):''}">${a?a.pct+'%':'—'}</span></div>
+        <div class="cz-ind-row"><span class="cz-ind-lbl">Asistencia</span><span class="cz-ind-val cz-ind-val-sm" style="color:${a?(a.pct<50?'#dc2626':a.pct<=80?'#e0a200':'#16a34a'):'inherit'};">${a?a.pct+'%':'—'}</span></div>
       </div>
     </div>`;
   }).join('');
@@ -3061,8 +3063,9 @@ function buildResumen(){
   const heroItems = [
     (info&&info[INFO.brazo])?['Brazo hábil', info[INFO.brazo]]:null,
     (info&&info[INFO.altura])?['Altura', info[INFO.altura]]:null,
-    (info&&info[INFO.edad])?['Edad', info[INFO.edad]+' años']:null
-  ].filter(Boolean).map(it=>`<div class="ph-it"><label>${it[0]}</label><span>${it[1]}</span></div>`).join('');
+    (info&&info[INFO.edad])?['Edad', info[INFO.edad]+' años']:null,
+    (info&&info[INFO.objetivo])?['Objetivo', info[INFO.objetivo], true]:null
+  ].filter(Boolean).map(it=>`<div class="ph-it${it[2]?' ph-it-obj':''}"><label>${it[0]}</label><span>${it[1]}</span></div>`).join('');
   const heroObj = (info&&info[INFO.objetivo])?`<div class="ph-obj"><label>Objetivo</label><span>${info[INFO.objetivo]}</span></div>`:'';
   const _dn=desempenoNivel(tot);
   const _aDone=at?Math.min(at.objetivo|0,at.cumplidas|0):0, _aObj=at?(at.objetivo|0):0;
@@ -3074,7 +3077,6 @@ function buildResumen(){
     <div class="ph-name">${currentPlayer}</div>
     ${heroCat}
     <div class="ph-grid">${heroItems}</div>
-    ${heroObj}
   </div>
   <div class="perfil-row2">
     <div class="card perfil-kpi2">
@@ -3234,7 +3236,7 @@ function buildRubrica(){
       <div class="chart-wrap" style="height:380px;margin-top:16px;"><canvas id="ch-radar"></canvas></div>
     </div></div>
   </div>`;
-  el.innerHTML = infoBtn + monthChipsHTML() + grid + radarHTML;
+  el.innerHTML = infoBtn + grid + radarHTML;
   ldEl.style.display='none'; el.style.display='block';
   renderProfileRadar();
 }
@@ -3439,7 +3441,7 @@ function buildHistorial(){
     <span><span class="lg-swatch" style="background:var(--surf2);border:1px dashed var(--border);"></span> Reporte 🔒</span>
   </div>`;
   const calsHTML=months.map(mk=>buildMonthCalendar(mk, byMonth[mk], pl)).join('');
-  el.innerHTML=infoBtn+monthChipsHTML()+legend+`<div class="cal-months">${calsHTML}</div>`;
+  el.innerHTML=infoBtn+`<div class="cal-months">${calsHTML}</div>`;
   ldEl.style.display='none'; el.style.display='block';
 }
 
