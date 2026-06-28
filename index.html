@@ -216,6 +216,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .pk2-val{font-size:24px;font-weight:900;line-height:1.12;color:var(--text);}
 .pk2-val span{font-size:12px;font-weight:700;color:#9aaa9a;}
 .pk2-month{font-size:10px;color:var(--muted);margin-top:auto;padding-top:12px;text-transform:capitalize;}
+/* Mi Perfil: sparkline en cards Mi Desempeño / Mi Asistencia */
+.perfil-kpi2{overflow:hidden;}
+.pk2-month{margin-top:4px;}
+.pk2-spark{margin:auto -16px -16px;height:40px;}
+.pk2-spark .area-spark{display:block;width:100%;height:40px;}
+/* Mi Tenis: cards de área estilo Reporte mensual (.ac) */
+.ac{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:13px 13px 12px;box-shadow:0 2px 10px rgba(10,61,42,.06);}
+.ac-h{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.ac-ic{width:27px;height:27px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0;}
+.ac-nm{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#1a3325;}
+.ac-val{font-size:30px;font-weight:900;line-height:1;}
+.ac-val span{font-size:13px;font-weight:700;color:#9aaa9a;}
+.ac-bar{height:6px;border-radius:99px;background:#e4ece0;margin:8px 0 7px;overflow:hidden;}
+.ac-bar i{display:block;height:100%;border-radius:99px;}
+.ac-st{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+.ac-st.st-up{color:#16a34a;} .ac-st.st-eq{color:#6b8a76;} .ac-st.st-dn{color:#c2185b;} .ac-st.st-new{color:#b97800;}
+.ac-dl{font-size:10px;font-weight:700;color:#6b8a76;margin-top:1px;}
+/* Mi Tenis: acordeón Mis Habilidades dentro de cada columna */
+.mt-col .acc{margin-bottom:0;}
+.skills-acc .acc-head{padding:11px 14px;}
+.skills-acc .acc-title{font-size:12px;font-weight:800;color:var(--blue);}
+
 /* Mi Tenis: grilla KPI de área + habilidades */
 .mt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start;margin-top:8px;}
 .mt-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
@@ -2840,11 +2862,12 @@ function _smoothPath(pts){
   }
   return d;
 }
-function areaSparkline(values,color,gid){
-  const vals=(values||[]).filter(v=>v>0);
+function areaSparkline(values,color,gid,maxVal){
+  const vals=(values||[]).filter(v=>v!=null && !isNaN(v));
   if(vals.length<2) return '';
+  const mx=maxVal||3;
   const W=150,H=44,pad=4, n=vals.length;
-  const pts=vals.map((v,i)=>[(i/(n-1))*W, H-pad-((v)/(3))*(H-2*pad)]);
+  const pts=vals.map((v,i)=>[(i/(n-1))*W, H-pad-((v)/(mx))*(H-2*pad)]);
   const line=_smoothPath(pts);
   const fill=line+' L'+W+','+H+' L0,'+H+' Z';
   return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" class="area-spark"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity="0.30"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs><path d="'+fill+'" fill="url(#'+gid+')"/><path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -2946,20 +2969,7 @@ function buildResumen(){
     <div class="mc-cat">${monthLabel(curMonth)} · ${curSess.length} ses.</div>
   </div>`;
 
-  const radarHTML=`<div class="acc evo-acc">
-    <div class="acc-head" onclick="toggleAcc(this)">
-      <span class="acc-title">📊 Evaluación de mi Perfil</span>
-      <span class="acc-chevron">▾</span>
-    </div>
-    <div class="acc-body"><div class="acc-body-inner">
-      <div class="radar-range">
-        <button class="radar-range-btn ${radarRange==='30d'?'active':''}" data-range="30d" onclick="setRadarRange('30d')">Últimos 30 días</button>
-        <button class="radar-range-btn ${radarRange==='3m'?'active':''}" data-range="3m" onclick="setRadarRange('3m')">Últimos 3 meses</button>
-        <button class="radar-range-btn ${radarRange==='all'?'active':''}" data-range="all" onclick="setRadarRange('all')">Desde el inicio</button>
-      </div>
-      <div class="chart-wrap" style="height:380px;margin-top:16px;"><canvas id="ch-radar"></canvas></div>
-    </div></div>
-  </div>`;
+
 
   const at=attendanceFor(currentPlayer, curMonth);
   let asistHTML='';
@@ -2991,6 +3001,11 @@ function buildResumen(){
   const heroObj = (info&&info[INFO.objetivo])?`<div class="ph-obj"><label>Objetivo</label><span>${info[INFO.objetivo]}</span></div>`:'';
   const _dn=desempenoNivel(tot);
   const _aDone=at?Math.min(at.objetivo|0,at.cumplidas|0):0, _aObj=at?(at.objetivo|0):0;
+  const _allMk=[...new Set(playerSessions.map(monthKey).filter(Boolean))].sort();
+  const _desSeries=_allMk.map(mk=>{ const vv=areas.map(a=>areaAvgScope(currentPlayer,mk,a.id)).filter(x=>x>0); return vv.length?vv.reduce((x,y)=>x+y,0)/vv.length:0; }).filter(x=>x>0).slice(-12);
+  const _asiSeries=attMonths(currentPlayer).map(mk=>{ const a=attendanceFor(currentPlayer,mk); return a?a.pct:null; }).filter(x=>x!=null).slice(-12);
+  const _desSpark=areaSparkline(_desSeries, _dn.colLight, 'sgdes', 3);
+  const _asiSpark=areaSparkline(_asiSeries, '#0a513a', 'sgasi', 100);
   const perfilTop = `<div class="perfil-top">
     <div class="ptile perfil-info">
       <div class="ph-name">${currentPlayer}</div>
@@ -2999,20 +3014,20 @@ function buildResumen(){
       ${heroObj}
     </div>
     <div class="card perfil-kpi2">
-      <div class="card-title">Desempeño general</div>
+      <div class="card-title">Mi Desempeño</div>
       <div class="pk2-val" style="color:${_dn.colLight};">${_dn.lbl}</div>
       <div class="pk2-month">${monthLabel(curMonth)}</div>
+      <div class="pk2-spark">${_desSpark}</div>
     </div>
     <div class="card perfil-kpi2">
-      <div class="card-title">Asistencia</div>
+      <div class="card-title">Mi Asistencia</div>
       <div class="pk2-val">${at?`${_aDone}<span>/${_aObj} clases</span>`:'—'}</div>
       <div class="pk2-month">${monthLabel(curMonth)}</div>
+      <div class="pk2-spark">${_asiSpark}</div>
     </div>
   </div>`;
-  el.innerHTML = chips + perfilTop + radarHTML;
+  el.innerHTML = chips + perfilTop;
   ldEl.style.display='none'; el.style.display='block';
-
-  renderProfileRadar();
 }
 
 // ══════════════════════════════════════
@@ -3075,28 +3090,36 @@ function buildRubrica(){
   const _prevShort=_prevMk?monthLabel(_prevMk).split(' ')[0]:'';
   const prevSessList = _prevMk?playerSessions.filter(s=>monthKey(s)===_prevMk):[];
   const latestIn=(list,key)=>{ for(let i=list.length-1;i>=0;i--){ const lv=toLvl(list[i][COL[key]]); if(lv>0) return lv; } return 0; };
-  const areas=[{id:'tecnica',nombre:'Técnica'},{id:'tactica',nombre:'Táctica'},{id:'fisico',nombre:'Físico'},{id:'mental',nombre:'Mental'}];
+  const RAREAS=[
+    {id:'tecnica',nombre:'Técnica',  emoji:'🎾',col:'#0d5230'},
+    {id:'tactica',nombre:'Táctica',  emoji:'♟️',col:'#b97800'},
+    {id:'fisico', nombre:'Físico',   emoji:'⚡',col:'#1f9d57'},
+    {id:'mental', nombre:'Mentalidad',emoji:'🧠',col:'#c2185b'}
+  ];
   const PERF_Q={'Construcción del punto':'¿Construye variando sus golpes?','Lectura del rival':'¿Ajusta su juego?','Gestión del marcador':'¿Sabe cuándo arriesgar?','Resistencia':'¿Se cansa rápido?'};
 
-  // KPI por área (promedio del mes + comparación + sparkline)
+  // KPI por área — formato del Reporte mensual (ícono + barra + estado)
   const kpiCard=(a)=>{
     const v=areaAvgScope(currentPlayer,_curMk,a.id);
     const pv=_prevMk?areaAvgScope(currentPlayer,_prevMk,a.id):0;
+    const w=Math.max(4,Math.min(100,(v/3)*100));
     const d=(_prevMk&&v>0&&pv>0)?(v-pv):null;
-    const col=AREA_COL[a.id]||'#0a513a';
-    const arrow=d===null?'':(d>=0.05?'↑':d<=-0.05?'↓':'→');
-    const dCol=d===null?'#9aaa9a':(d>=0.05?'#16a34a':d<=-0.05?'#dc2626':'#9aaa9a');
-    const dTxt=d===null?'Sin mes anterior':((d>=0?'+':'')+d.toFixed(1)+(_prevShort?' vs '+_prevShort:''));
-    const spvals=playerSessions.map(s=>avgLvlKeys(s,AREA_KEYS[a.id])).filter(x=>x>0).slice(-12);
-    const spark=areaSparkline(spvals,col,'mtsg_'+a.id);
-    return `<div class="metric-card area-card">
-      <div class="ac2-head"><div class="ac2-title">${AREA_META[a.id].emoji} ${a.nombre}</div></div>
-      <div class="ac2-val" style="color:${col};">${v>0?v.toFixed(1):'—'}<span>/3</span>${arrow?` <span class="ac2-arrow" style="color:${dCol};">${arrow}</span>`:''}</div>
-      <div class="ac2-delta" style="color:${dCol};">${dTxt}</div>
-      <div class="ac2-spark">${spark}</div>
+    let st='';
+    if(d!==null){
+      let cls,ar,lbl,val;
+      if(Math.abs(d)<0.05){cls='st-eq';ar='→';lbl='ESTABLE';val='0.0';}
+      else if(d>0){cls='st-up';ar='↗';lbl='EN EVOLUCIÓN';val='+'+d.toFixed(1);}
+      else {cls='st-dn';ar='↘';lbl='EN AJUSTE';val=d.toFixed(1);}
+      st=`<div class="ac-st ${cls}">${ar} ${lbl}</div><div class="ac-dl">${val}${_prevShort?' vs '+_prevShort:''}</div>`;
+    }
+    return `<div class="ac">
+      <div class="ac-h"><div class="ac-ic" style="background:${a.col};">${a.emoji}</div><div class="ac-nm">${a.nombre}</div></div>
+      <div class="ac-val" style="color:${v>0?a.col:'#9aaa9a'};">${v>0?v.toFixed(1):'—'}<span> / 3</span></div>
+      <div class="ac-bar"><i style="width:${w}%;background:${a.col};"></i></div>
+      ${st}
     </div>`;
   };
-  // Habilidades por área (solo nivel, sin pulgares)
+  // Habilidades por área — acordeón "Mis Habilidades" (sin pulgares, solo nivel)
   const skillsCard=(a)=>{
     const grupos=RESUMEN_GROUPS[a.id];
     const rows=grupos.map(g=>{
@@ -3114,17 +3137,36 @@ function buildRubrica(){
             : `<span class="ball-label lb${lv}">${lvlLabel(lv)}</span>`}
         </div>
         ${q?`<div class="ball-q">${q}</div>`:''}
-        ${rise?`<div class="rise-tag">¡Subiste de nivel!</div>`:''}
+        ${rise?`<div class="rise-tag">+1 Nivel</div>`:''}
       </div>`;
     }).filter(Boolean).join('');
-    const body = rows || '<div class="empty" style="color:var(--muted);padding:14px 0;font-size:12px;">Sin evaluación este mes.</div>';
-    return `<div class="perf-card"><div class="perf-card-title">${AREA_META[a.id].emoji} ${a.nombre}</div>${body}</div>`;
+    const body = rows || '<div class="empty" style="color:var(--muted);padding:10px 0;font-size:12px;">Sin evaluación este mes.</div>';
+    return `<div class="acc skills-acc open">
+      <div class="acc-head" onclick="toggleAcc(this)"><span class="acc-title">💪 Mis Habilidades</span><span class="acc-chevron">▾</span></div>
+      <div class="acc-body"><div class="acc-body-inner">${body}</div></div>
+    </div>`;
   };
 
-  const grid=`<div class="mt-grid">${areas.map(a=>`<div class="mt-col">${kpiCard(a)}${skillsCard(a)}</div>`).join('')}</div>`;
-  el.innerHTML = infoBtn + monthChipsHTML() + grid;
+  const grid=`<div class="mt-grid">${RAREAS.map(a=>`<div class="mt-col">${kpiCard(a)}${skillsCard(a)}</div>`).join('')}</div>`;
+  const radarHTML=`<div class="acc evo-acc" style="margin-top:18px;">
+    <div class="acc-head" onclick="toggleAcc(this)">
+      <span class="acc-title">📊 Evaluación de Mi Tenis</span>
+      <span class="acc-chevron">▾</span>
+    </div>
+    <div class="acc-body"><div class="acc-body-inner">
+      <div class="radar-range">
+        <button class="radar-range-btn ${radarRange==='30d'?'active':''}" data-range="30d" onclick="setRadarRange('30d')">Últimos 30 días</button>
+        <button class="radar-range-btn ${radarRange==='3m'?'active':''}" data-range="3m" onclick="setRadarRange('3m')">Últimos 3 meses</button>
+        <button class="radar-range-btn ${radarRange==='all'?'active':''}" data-range="all" onclick="setRadarRange('all')">Desde el inicio</button>
+      </div>
+      <div class="chart-wrap" style="height:380px;margin-top:16px;"><canvas id="ch-radar"></canvas></div>
+    </div></div>
+  </div>`;
+  el.innerHTML = infoBtn + monthChipsHTML() + grid + radarHTML;
   ldEl.style.display='none'; el.style.display='block';
+  renderProfileRadar();
 }
+
 
 // ══════════════════════════════════════
 // PLAN DE ACCIÓN — objetivo, observación y focos (acordeón + checklist)
