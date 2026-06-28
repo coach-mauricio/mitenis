@@ -124,8 +124,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* CARDS */
 .card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
 .card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#ffde59;background:#0a513a;padding:8px 12px;border-radius:9px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
-#content-resumen .card-title, #content-liga .card-title{color:#fff;}
+#content-liga .card-title{color:#fff;}
+#content-resumen .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
 .lvl-pill{display:inline-block;padding:4px 14px;border-radius:999px;font-size:15px;font-weight:800;}
+/* Mi Perfil v6: info sola + fila 2 (Desempeño + Asistencia) */
+.perfil-info-solo{margin-bottom:14px;}
+.perfil-row2{display:flex;gap:14px;align-items:stretch;margin-bottom:16px;}
+.perfil-row2 .perfil-kpi2{flex:1 1 0;margin-bottom:0;}
+.perfil-row2 .asist-card{flex:2 1 0;margin-bottom:0;overflow:hidden;}
+@media(max-width:620px){ .perfil-row2{flex-wrap:wrap;} .perfil-row2 .perfil-kpi2,.perfil-row2 .asist-card{flex:1 1 100%;} }
+/* Mi Tenis: habilidades DENTRO de la card del KPI */
+.ac{overflow:hidden;}
+.mt-grid > .ac{margin-bottom:0;}
+.ac .skills-acc{background:transparent;border:none;box-shadow:none;border-radius:0;margin:10px -13px -12px;border-top:1px solid #eef3e8;overflow:hidden;}
+.ac .skills-acc .acc-head{padding:9px 13px;}
+.ac .skills-acc .acc-head:hover{background:rgba(10,81,58,.04);}
+.ac .skills-acc .acc-title{font-size:11px;font-weight:800;color:var(--blue);}
+.ac .skills-acc .acc-body-inner{padding:0 13px 10px;}
 .card-title::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* FICHA */
@@ -724,7 +739,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* === v15: paleta de niveles (chip fondo + texto negro) === */
 .ball-label{padding:4px 12px;border-radius:999px;color:#161616!important;font-weight:700;text-align:center;min-width:0;}
 .lb1{background:var(--n1);} .lb2{background:var(--n2);} .lb3{background:var(--n3);}
-.ball-label.lb3{color:#fff!important;}
+.ball-label.lb3{color:#161616!important;}
 .dot-1{background:var(--n1);} .dot-2{background:var(--n2);} .dot-3{background:var(--n3);}
 .prio-row.lv1{border-left-color:var(--n1);}
 .prio-row.lv2{border-left-color:var(--n2);}
@@ -1226,8 +1241,7 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
   <div class="pin-modal" style="max-width:380px;">
     <div class="pin-title">Cómo se mide Mi Tenis</div>
     <div style="font-size:14px;color:var(--text);line-height:1.7;text-align:left;margin-top:4px;">
-      <p style="margin:0 0 12px;">Tu rendimiento se mide en <strong>3 niveles</strong>, los profes te observan para luego ayudarte a mejorar.</p>
-      <p style="margin:0;"><strong>Extra:</strong> Si hacés click en una habilidad en <strong>Nivel Bien</strong> podés ver cómo seguir mejorando.</p>
+      <p style="margin:0;">Tu rendimiento se mide teniendo en cuenta las <strong>4 áreas principales</strong> del tenis (Técnica, Táctica, Físico y Mental). Los profes te observan y luego te ayudan a mejorar.</p>
     </div>
     <div class="pin-actions"><button class="pin-btn pin-ok" onclick="closeRendInfo()">Entendido</button></div>
   </div>
@@ -2032,11 +2046,19 @@ function goBack(){
   document.getElementById('app').classList.remove('visible');
   saveNav();
 }
+function playerCurrentMonth(){
+  const ms=[...new Set(allRows.filter(r=>r[COL.alumno]===currentPlayer).map(monthKey).filter(Boolean))].sort();
+  const now=new Date(); const cmk=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  return ms.includes(cmk)?cmk:(ms[ms.length-1]||'all');
+}
 function switchTab(id,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-view').forEach(v=>v.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   document.getElementById('tab-'+id).classList.add('active');
+  // Defaults de filtro por pestaña: Informes -> Todos · Mi Tenis -> mes actual
+  if(id==='historial'){ if(selectedMonth!=='all'){ selectedMonth='all'; try{buildHistorial();}catch(e){} } }
+  else if(id==='rubrica'){ const cm=playerCurrentMonth(); if(selectedMonth!==cm){ selectedMonth=cm; try{buildRubrica();}catch(e){} } }
   saveNav();
 }
 function toggleAcc(head){
@@ -2867,7 +2889,7 @@ function areaAvgForSessions(list, areaId){
 const AREA_COL={tecnica:'#0a513a',tactica:'#e0a200',fisico:'#16a34a',mental:'#d6336c'};
 // Desempeño general — umbrales: BIEN <1.7 · MUY BIEN 1.7-2.3 · EXCELENTE >2.3
 function desempenoNivel(o){
-  if(o>2.3) return {lbl:'EXCELENTE', msg:'Gran mes de trabajo. ¡A sostenerlo!', bg:'#148f67', txt:'#fff', col:'#148f67', colLight:'#148f67', thumbs:3};
+  if(o>2.3) return {lbl:'EXCELENTE', msg:'Gran mes de trabajo. ¡A sostenerlo!', bg:'#148f67', txt:'#161616', col:'#148f67', colLight:'#148f67', thumbs:3};
   if(o>=1.7) return {lbl:'MUY BIEN', msg:'Buen mes de trabajo. Vamos por más.', bg:'#a0b834', txt:'#161616', col:'#a0b834', colLight:'#a0b834', thumbs:2};
   return {lbl:'BIEN', msg:'Seguimos sumando, paso a paso.', bg:'#ffde59', txt:'#161616', col:'#ffde59', colLight:'#ffde59', thumbs:1};
 }
@@ -3048,31 +3070,31 @@ function buildResumen(){
   const _desSeries=_allMk.map(mk=>{ const vv=areas.map(a=>areaAvgScope(currentPlayer,mk,a.id)).filter(x=>x>0); return vv.length?vv.reduce((x,y)=>x+y,0)/vv.length:0; }).filter(x=>x>0).slice(-12);
   const _desSpark=areaSparkline(_desSeries, _dn.colLight, 'sgdes', 3);
   const _barSeries=attMonths(currentPlayer).map(mk=>{ const a=attendanceFor(currentPlayer,mk); return a?{m:monthLabel(mk).slice(0,3),val:Math.min(a.objetivo|0,a.cumplidas|0),obj:a.objetivo|0}:null; }).filter(Boolean).slice(-6);
-  const perfilTop = `<div class="perfil-row1">
-    <div class="ptile perfil-info">
-      <div class="ph-name">${currentPlayer}</div>
-      ${heroCat}
-      <div class="ph-grid">${heroItems}</div>
-      ${heroObj}
-    </div>
+  const perfilTop = `<div class="ptile perfil-info perfil-info-solo">
+    <div class="ph-name">${currentPlayer}</div>
+    ${heroCat}
+    <div class="ph-grid">${heroItems}</div>
+    ${heroObj}
+  </div>
+  <div class="perfil-row2">
     <div class="card perfil-kpi2">
       <div class="card-title">Mi Desempeño</div>
       <div class="pk2-val"><span class="lvl-pill" style="background:${_dn.bg};color:${_dn.txt};">${_dn.lbl}</span></div>
       <div class="pk2-month">${monthLabel(curMonth)}</div>
       <div class="pk2-spark">${_desSpark}</div>
     </div>
-  </div>
-  <div class="card asist-card">
-    <div class="card-title">Mi Asistencia</div>
-    <div class="asist-body">
-      <div class="asist-left">
-        ${donutSVG(at?at.pct:0,'#0a513a')}
-        <div class="asist-count">${at?`${_aDone}/${_aObj} clases`:'—'}</div>
-      </div>
-      <div class="asist-vline"></div>
-      <div class="asist-right">
-        <div class="asist-right-lbl">Clases por mes</div>
-        ${attBarsSVG(_barSeries,'#0a513a')}
+    <div class="card asist-card">
+      <div class="card-title">Mi Asistencia</div>
+      <div class="asist-body">
+        <div class="asist-left">
+          ${donutSVG(at?at.pct:0,'#0a513a')}
+          <div class="asist-count">${at?`${_aDone}/${_aObj} clases`:'—'}</div>
+        </div>
+        <div class="asist-vline"></div>
+        <div class="asist-right">
+          <div class="asist-right-lbl">Clases por mes</div>
+          ${attBarsSVG(_barSeries,'#0a513a')}
+        </div>
       </div>
     </div>
   </div>`;
@@ -3167,6 +3189,7 @@ function buildRubrica(){
       <div class="ac-val" style="color:${v>0?a.col:'#9aaa9a'};">${v>0?v.toFixed(1):'—'}<span> / 3</span></div>
       <div class="ac-bar"><i style="width:${w}%;background:${a.col};"></i></div>
       ${st}
+      ${skillsCard(a)}
     </div>`;
   };
   // Habilidades por área — acordeón "Mis Habilidades" (sin pulgares, solo nivel)
@@ -3196,7 +3219,7 @@ function buildRubrica(){
     </div>`;
   };
 
-  const grid=`<div class="mt-grid">${RAREAS.map(a=>`<div class="mt-col">${kpiCard(a)}${skillsCard(a)}</div>`).join('')}</div>`;
+  const grid=`<div class="mt-grid">${RAREAS.map(kpiCard).join('')}</div>`;
   const radarHTML=`<div class="acc evo-acc" style="margin-top:18px;">
     <div class="acc-head" onclick="toggleAcc(this)">
       <span class="acc-title">📊 Evaluación de Mi Tenis</span>
