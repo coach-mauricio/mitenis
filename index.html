@@ -210,6 +210,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .ac2-spark{margin:10px -13px 0;height:44px;}
 .area-spark{display:block;width:100%;height:44px;}
 @media(max-width:560px){ .perfil-info{flex:1 1 100%;} .pk-val{font-size:22px;} }
+/* Mi Perfil v4: KPI cards blancas (Desempeño / Asistencia) */
+.perfil-kpi2{flex:1 1 150px;min-width:0;margin-bottom:0;display:flex;flex-direction:column;}
+.perfil-top > .card{margin-bottom:0;}
+.pk2-val{font-size:24px;font-weight:900;line-height:1.12;color:var(--text);}
+.pk2-val span{font-size:12px;font-weight:700;color:#9aaa9a;}
+.pk2-month{font-size:10px;color:var(--muted);margin-top:auto;padding-top:12px;text-transform:capitalize;}
+/* Mi Tenis: grilla KPI de área + habilidades */
+.mt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start;margin-top:8px;}
+.mt-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.mt-col .metric-card,.mt-col .perf-card{margin-bottom:0;}
+@media(max-width:900px){ .mt-grid{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:520px){ .mt-grid{grid-template-columns:1fr;} }
+
 
 .metric-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:13px;text-align:center;}
 .metric-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
@@ -1171,8 +1184,8 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
   <div class="pin-modal" style="max-width:380px;">
     <div class="pin-title">Cómo se mide Mi Tenis</div>
     <div style="font-size:14px;color:var(--text);line-height:1.7;text-align:left;margin-top:4px;">
-      <p style="margin:0 0 12px;">Tu rendimiento se mide en <strong>3 niveles</strong>, sumá 👍 a medida que mejorás.</p>
-      <p style="margin:0;"><strong>Extra:</strong> Si hacés click en una habilidad <strong>Bien</strong> podés ver cómo seguir mejorando.</p>
+      <p style="margin:0 0 12px;">Tu rendimiento se mide en <strong>3 niveles</strong>, los profes te observan para luego ayudarte a mejorar.</p>
+      <p style="margin:0;"><strong>Extra:</strong> Si hacés click en una habilidad en <strong>Nivel Bien</strong> podés ver cómo seguir mejorando.</p>
     </div>
     <div class="pin-actions"><button class="pin-btn pin-ok" onclick="closeRendInfo()">Entendido</button></div>
   </div>
@@ -2812,9 +2825,9 @@ function areaAvgForSessions(list, areaId){
 const AREA_COL={tecnica:'#0a513a',tactica:'#e0a200',fisico:'#16a34a',mental:'#d6336c'};
 // Desempeño general — umbrales: BIEN <1.7 · MUY BIEN 1.7-2.3 · EXCELENTE >2.3
 function desempenoNivel(o){
-  if(o>2.3) return {lbl:'EXCELENTE', msg:'Gran mes de trabajo. ¡A sostenerlo!', col:'#22b16c', thumbs:3};
-  if(o>=1.7) return {lbl:'MUY BIEN', msg:'Buen mes de trabajo. Vamos por más.', col:'#ffde59', thumbs:2};
-  return {lbl:'BIEN', msg:'Seguimos sumando, paso a paso.', col:'#7ed957', thumbs:1};
+  if(o>2.3) return {lbl:'EXCELENTE', msg:'Gran mes de trabajo. ¡A sostenerlo!', col:'#22b16c', colLight:'#16a34a', thumbs:3};
+  if(o>=1.7) return {lbl:'MUY BIEN', msg:'Buen mes de trabajo. Vamos por más.', col:'#ffde59', colLight:'#0a513a', thumbs:2};
+  return {lbl:'BIEN', msg:'Seguimos sumando, paso a paso.', col:'#7ed957', colLight:'#b97800', thumbs:1};
 }
 function _smoothPath(pts){
   if(pts.length<2) return '';
@@ -2923,22 +2936,7 @@ function buildResumen(){
   const curAvgs={}, prevAvgs={};
   areas.forEach(a=>{ curAvgs[a.id]=areaAvgForSessions(curSess,a.id); prevAvgs[a.id]=areaAvgForSessions(prevSess,a.id); });
 
-  const cards=areas.map(a=>{
-    const v=curAvgs[a.id], pv=prevAvgs[a.id];
-    const d=(prevMonth&&v>0&&pv>0)?(v-pv):null;
-    const col=AREA_COL[a.id]||'#0a513a';
-    const arrow = d===null?'' : (d>=0.05?'↑':d<=-0.05?'↓':'→');
-    const dCol = d===null?'#9aaa9a':(d>=0.05?'#16a34a':d<=-0.05?'#dc2626':'#9aaa9a');
-    const dTxt = d===null?'Sin mes anterior':((d>=0?'+':'')+d.toFixed(1)+' vs '+(prevLbl?prevLbl.split(' ')[0]:''));
-    const spvals=playerSessions.map(s=>avgLvlKeys(s,AREA_KEYS[a.id])).filter(x=>x>0).slice(-12);
-    const spark=areaSparkline(spvals,col,'sg_'+a.id);
-    return `<div class="metric-card area-card">
-      <div class="ac2-head"><div class="ac2-title">${AREA_META[a.id].emoji} ${a.nombre}</div>${tipBtn(TIPS[a.id])}</div>
-      <div class="ac2-val" style="color:${col};">${v>0?v.toFixed(1):'—'}<span>/3</span>${arrow?` <span class="ac2-arrow" style="color:${dCol};">${arrow}</span>`:''}</div>
-      <div class="ac2-delta" style="color:${dCol};">${dTxt}</div>
-      <div class="ac2-spark">${spark}</div>
-    </div>`;
-  }).join('');
+  // (las cards de área se muestran ahora en la pestaña Mi Tenis)
 
   const totVals=areas.map(a=>curAvgs[a.id]).filter(v=>v>0);
   const tot=totVals.length?totVals.reduce((x,y)=>x+y,0)/totVals.length:0;
@@ -2992,6 +2990,7 @@ function buildResumen(){
   ].filter(Boolean).map(it=>`<div class="ph-it"><label>${it[0]}</label><span>${it[1]}</span></div>`).join('');
   const heroObj = (info&&info[INFO.objetivo])?`<div class="ph-obj"><label>Objetivo</label><span>${info[INFO.objetivo]}</span></div>`:'';
   const _dn=desempenoNivel(tot);
+  const _aDone=at?Math.min(at.objetivo|0,at.cumplidas|0):0, _aObj=at?(at.objetivo|0):0;
   const perfilTop = `<div class="perfil-top">
     <div class="ptile perfil-info">
       <div class="ph-name">${currentPlayer}</div>
@@ -2999,20 +2998,18 @@ function buildResumen(){
       <div class="ph-grid">${heroItems}</div>
       ${heroObj}
     </div>
-    <div class="ptile perfil-kpi">
-      <div class="pk-title">Desempeño general</div>
-      <div class="pk-val" style="color:${_dn.col};">${_dn.lbl}</div>
-      <div class="pk-msg">${_dn.msg}</div>
-      <div class="pk-month">${monthLabel(curMonth)}</div>
+    <div class="card perfil-kpi2">
+      <div class="card-title">Desempeño general</div>
+      <div class="pk2-val" style="color:${_dn.colLight};">${_dn.lbl}</div>
+      <div class="pk2-month">${monthLabel(curMonth)}</div>
     </div>
-    <div class="ptile perfil-kpi">
-      <div class="pk-title">Asistencia</div>
-      <div class="pk-val" style="color:#ffde59;">${at?at.pct+'%':'—'}</div>
-      <div class="pk-msg">${at?`${at.cumplidas|0}/${at.objetivo|0} sesiones`:'Sin datos del mes'}</div>
-      <div class="pk-month">${monthLabel(curMonth)}</div>
+    <div class="card perfil-kpi2">
+      <div class="card-title">Asistencia</div>
+      <div class="pk2-val">${at?`${_aDone}<span>/${_aObj} clases</span>`:'—'}</div>
+      <div class="pk2-month">${monthLabel(curMonth)}</div>
     </div>
   </div>`;
-  el.innerHTML = chips + perfilTop + `<div class="metrics-row">${cards}</div>` + radarHTML;
+  el.innerHTML = chips + perfilTop + radarHTML;
   ldEl.style.display='none'; el.style.display='block';
 
   renderProfileRadar();
@@ -3064,102 +3061,69 @@ function setRadarRange(r){ radarRange=r; try{document.querySelectorAll('.radar-r
 function buildRubrica(){
   const el=document.getElementById('content-rubrica');
   const ldEl=document.getElementById('loading-rubrica');
+  const infoBtn=`<button class="lg-info-btn" onclick="openRendInfo()">ℹ️ ¿Cómo se mide Mi Tenis?</button>`;
   const sess=playerSessions;
   if(!sess.length){
     ldEl.style.display='none'; el.style.display='block';
-    el.innerHTML='<div class="empty">No hay sesiones para mostrar.</div>'; return;
+    el.innerHTML=infoBtn+monthChipsHTML()+'<div class="empty">No hay sesiones para mostrar.</div>'; return;
   }
   const fsess=filterByMonth(sess);
   const last=fsess[fsess.length-1];
   const _months=[...new Set(playerSessions.map(monthKey).filter(Boolean))].sort();
   const _curMk=last?monthKey(last):'';
   const _prevMk=_months.indexOf(_curMk)>0?_months[_months.indexOf(_curMk)-1]:null;
+  const _prevShort=_prevMk?monthLabel(_prevMk).split(' ')[0]:'';
   const prevSessList = _prevMk?playerSessions.filter(s=>monthKey(s)===_prevMk):[];
   const latestIn=(list,key)=>{ for(let i=list.length-1;i>=0;i--){ const lv=toLvl(list[i][COL[key]]); if(lv>0) return lv; } return 0; };
-  const bench=calcBench(currentPlayer);
-  const info=getInfo(currentPlayer);
-  const catName=info?info[INFO.categoria]:'';
   const areas=[{id:'tecnica',nombre:'Técnica'},{id:'tactica',nombre:'Táctica'},{id:'fisico',nombre:'Físico'},{id:'mental',nombre:'Mental'}];
-  const balls=(lv)=>[1,2,3].map(i=>`<span class="thumb ${i<=lv?'on':'off'}">👍</span>`).join('');
-  const PERF_Q={'Construcción del punto':'¿Construye variando sus golpes?','Lectura del rival':'¿Ajusta su juego?','Gestión del marcador':'¿Sabe cuándo arriesgar?','Resistencia':'¿Se cansa rápido?','Velocidad':'¿Llega con equilibrio y tiempo?','Agilidad':'¿Recupera posición rápido?','Fuerza':'¿Juega profundo bajo cansancio?','Tolerancia al error':'¿Resetea entre puntos?','Actitud':'¿Mantiene una actitud positiva?','Comunicación':'¿Postura activa y positiva?','Concentración':'¿Se mantiene presente?'};
-  const cards=areas.map(a=>{
+  const PERF_Q={'Construcción del punto':'¿Construye variando sus golpes?','Lectura del rival':'¿Ajusta su juego?','Gestión del marcador':'¿Sabe cuándo arriesgar?','Resistencia':'¿Se cansa rápido?'};
+
+  // KPI por área (promedio del mes + comparación + sparkline)
+  const kpiCard=(a)=>{
+    const v=areaAvgScope(currentPlayer,_curMk,a.id);
+    const pv=_prevMk?areaAvgScope(currentPlayer,_prevMk,a.id):0;
+    const d=(_prevMk&&v>0&&pv>0)?(v-pv):null;
+    const col=AREA_COL[a.id]||'#0a513a';
+    const arrow=d===null?'':(d>=0.05?'↑':d<=-0.05?'↓':'→');
+    const dCol=d===null?'#9aaa9a':(d>=0.05?'#16a34a':d<=-0.05?'#dc2626':'#9aaa9a');
+    const dTxt=d===null?'Sin mes anterior':((d>=0?'+':'')+d.toFixed(1)+(_prevShort?' vs '+_prevShort:''));
+    const spvals=playerSessions.map(s=>avgLvlKeys(s,AREA_KEYS[a.id])).filter(x=>x>0).slice(-12);
+    const spark=areaSparkline(spvals,col,'mtsg_'+a.id);
+    return `<div class="metric-card area-card">
+      <div class="ac2-head"><div class="ac2-title">${AREA_META[a.id].emoji} ${a.nombre}</div></div>
+      <div class="ac2-val" style="color:${col};">${v>0?v.toFixed(1):'—'}<span>/3</span>${arrow?` <span class="ac2-arrow" style="color:${dCol};">${arrow}</span>`:''}</div>
+      <div class="ac2-delta" style="color:${dCol};">${dTxt}</div>
+      <div class="ac2-spark">${spark}</div>
+    </div>`;
+  };
+  // Habilidades por área (solo nivel, sin pulgares)
+  const skillsCard=(a)=>{
     const grupos=RESUMEN_GROUPS[a.id];
     const rows=grupos.map(g=>{
       const arr=g.keys.map(k=>latestIn(fsess,k)).filter(v=>v>0);
       if(!arr.length) return '';
-      const p=arr.reduce((x,y)=>x+y,0)/arr.length;
-      const lv=Math.round(p);
+      const lv=Math.round(arr.reduce((x,y)=>x+y,0)/arr.length);
       let prevLv=0; { const pa=g.keys.map(k=>latestIn(prevSessList,k)).filter(v=>v>0); if(pa.length) prevLv=Math.round(pa.reduce((x,y)=>x+y,0)/pa.length); }
       const rise = prevLv>0 && lv>prevLv;
       const q=PERF_Q[g.nombre]||'';
       return `<div class="ball-item">
         <div class="ball-row">
           <span class="ball-name">${g.nombre}${vidIconsHTML(g.nombre)}</span>
-          <span class="balls">${balls(lv)}</span>
           ${(lv===1||lv===2)
-            ? `<span class="ball-label lb${lv} mejora-trigger" onclick="openMejora('${g.nombre}',${lv})" title="Cómo mejorar">${lvlLabel(lv)}</span>`
+            ? `<span class="ball-label lb${lv} mejora-trigger" onclick="openMejora('${g.nombre.replace(/'/g,"\\'")}',${lv})" title="Cómo mejorar">${lvlLabel(lv)}</span>`
             : `<span class="ball-label lb${lv}">${lvlLabel(lv)}</span>`}
         </div>
         ${q?`<div class="ball-q">${q}</div>`:''}
         ${rise?`<div class="rise-tag">¡Subiste de nivel!</div>`:''}
       </div>`;
     }).filter(Boolean).join('');
-    if(!rows) return '';
-    return `<div class="perf-card"><div class="perf-card-title">${AREA_META[a.id].emoji} ${a.nombre}</div>${rows}</div>`;
-  }).join('');
-  const legend=`<div class="sem-legend" style="margin:18px 0 14px;align-items:center;">
-      <span class="sem-leg-label">Niveles</span>
-      <span class="sem-leg" style="background:var(--n1);color:#161616;">👍 Bien</span>
-      <span class="sem-leg" style="background:var(--n2);color:#161616;">👍👍 Muy Bien</span>
-      <span class="sem-leg" style="background:var(--n3);color:#161616;">👍👍👍 Excelente</span>
-    </div>`;
-  let evoInner;
-  if(playerSessions.length>=2){
-    evoInner=`<div class="nota" style="margin-top:0;">Histórico completo · no depende del mes seleccionado.</div><div class="chart-wrap" style="height:320px;margin-top:14px;"><canvas id="ch-evolucion"></canvas></div>`;
-  } else {
-    evoInner=`<div class="empty" style="color:var(--muted);">Necesitás al menos 2 sesiones para ver la evolución.</div>`;
-  }
-  const evoHTML=`<div class="acc evo-acc">
-    <div class="acc-head" onclick="toggleAcc(this)">
-      <span class="acc-title">📈 Evolución mensual por área</span>
-      <span class="acc-chevron">▾</span>
-    </div>
-    <div class="acc-body"><div class="acc-body-inner">${evoInner}</div></div>
-  </div>`;
-  const perfHTML = cards.replace(/\s/g,'') ? `<div class="perf-grid">${cards}</div>` : `<div class="empty" style="color:var(--muted);">Todavía no hay evaluaciones de rúbrica cargadas para este mes.</div>`;
-  el.innerHTML = `<button class="lg-info-btn" onclick="openRendInfo()">ℹ️ ¿Cómo se mide Mi Tenis?</button>` + monthChipsHTML() + legend + perfHTML + evoHTML;
+    const body = rows || '<div class="empty" style="color:var(--muted);padding:14px 0;font-size:12px;">Sin evaluación este mes.</div>';
+    return `<div class="perf-card"><div class="perf-card-title">${AREA_META[a.id].emoji} ${a.nombre}</div>${body}</div>`;
+  };
+
+  const grid=`<div class="mt-grid">${areas.map(a=>`<div class="mt-col">${kpiCard(a)}${skillsCard(a)}</div>`).join('')}</div>`;
+  el.innerHTML = infoBtn + monthChipsHTML() + grid;
   ldEl.style.display='none'; el.style.display='block';
-  // Gráfico de evolución — usa TODAS las sesiones, sin filtro de mes
-  if(charts['evolucion']){ try{charts['evolucion'].destroy();}catch(e){} }
-  const allSess=playerSessions;
-  if(allSess.length>=2){
-    const _ddmm=(s)=>{const d=parseDate(s[COL.fecha])||'';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]:fmtDate(s[COL.fecha]);};
-    const evLabels=allSess.map(_ddmm);
-    const evAreas=[
-      {id:'tecnica', nombre:'Técnica', color:'#0a513a'},
-      {id:'tactica', nombre:'Táctica', color:'#e0a200'},
-      {id:'fisico',  nombre:'Físico',  color:'#16a34a'},
-      {id:'mental',  nombre:'Mental',  color:'#d6336c'}
-    ];
-    charts['evolucion']=new Chart(document.getElementById('ch-evolucion'),{
-      type:'line',
-      data:{labels:evLabels, datasets:evAreas.map(a=>({
-        label:a.nombre,
-        data:allSess.map(s=>{const v=avgLvlKeys(s,AREA_KEYS[a.id]); return v>0?v:null;}),
-        borderColor:a.color, backgroundColor:a.color,
-        tension:.45, cubicInterpolationMode:'monotone', pointRadius:4, pointBackgroundColor:a.color, spanGaps:true, borderWidth:3
-      }))},
-      options:{responsive:true,maintainAspectRatio:false,
-        layout:{padding:{top:8,left:6,right:10}},
-        plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11},boxWidth:14,padding:14,usePointStyle:true}},
-          tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${(c.raw||0).toFixed(1)} 👍`}}},
-        scales:{
-          y:{min:0,max:3,ticks:{stepSize:1,padding:6,font:{size:10},callback:v=>['','Bien','Muy Bien','Excelente'][v]||''},grid:{color:'rgba(10,81,58,0.10)'},title:{display:false}},
-          x:{ticks:{font:{size:10},maxRotation:40,autoSkip:true,maxTicksLimit:8},grid:{color:'rgba(10,81,58,0.06)'}}
-        }
-      }
-    });
-  }
 }
 
 // ══════════════════════════════════════
