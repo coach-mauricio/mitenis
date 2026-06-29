@@ -124,7 +124,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* CARDS */
 .card{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
 .card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#ffde59;background:#0a513a;padding:8px 12px;border-radius:9px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
-#content-liga .card-title{color:#fff;}
+#content-liga .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
+#content-liga .card{overflow:hidden;}
 #content-resumen .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
 .cz-radar, .cz-rank-card{overflow:hidden;}
 .cz-radar > .card-title, .cz-rank-card > .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
@@ -971,7 +972,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .cal-months{display:flex;flex-wrap:wrap;gap:14px;max-width:1494px;}
 .cal-month-block{width:226px;display:flex;flex-direction:column;}
 .cal-card{width:100%;box-sizing:border-box;padding:10px;margin:0;background:var(--surf);border:1px solid var(--border);border-radius:14px;}
-.cal-card .card-title{font-size:12px;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);background:none;padding:0;}
+.cal-card{overflow:hidden;}
+.cal-card .card-title{font-size:12px;margin:-10px -10px 8px;padding:8px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;background:#0a513a;border-radius:14px 14px 0 0;}
 .cal-dows{display:grid;grid-template-columns:repeat(7,26px);gap:3px;margin-bottom:4px;justify-content:center;}
 .cal-dow{width:26px;text-align:center;font-size:9px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.02em;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,26px);gap:3px;justify-content:center;}
@@ -1106,8 +1108,8 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
     <nav class="app-tabs" id="tabs-escuela">
       <button class="tab-btn active" onclick="switchTab('resumen',this)">Mi Perfil</button>
       <button class="tab-btn" onclick="switchTab('rubrica',this)">Mi Tenis</button>
+      <button class="tab-btn" onclick="switchTab('liga',this)">Mi Ranking</button>
       <button class="tab-btn" onclick="switchTab('historial',this)">Informes</button>
-      <button class="tab-btn" onclick="switchTab('liga',this)">Ranking</button>
     </nav>
     <nav class="app-tabs" id="tabs-torneos" style="display:none;">
       <button class="tab-btn active" onclick="switchTab('partidos',this)">🎾 Mis Partidos</button>
@@ -1245,7 +1247,11 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
   <div class="pin-modal" style="max-width:380px;">
     <div class="pin-title">Cómo se mide Mi Tenis</div>
     <div style="font-size:14px;color:var(--text);line-height:1.7;text-align:left;margin-top:4px;">
-      <p style="margin:0;">Tu rendimiento se mide teniendo en cuenta las <strong>4 áreas principales</strong> del tenis (Técnica, Táctica, Físico y Mental). Los profes te observan y luego te ayudan a mejorar.</p>
+      <p style="margin:0 0 8px;">Tu rendimiento se mide teniendo en cuenta las <strong>4 áreas principales</strong> del tenis:</p>
+      <ul style="margin:0 0 10px;padding-left:20px;">
+        <li>Técnica</li><li>Táctica</li><li>Física</li><li>Mental</li>
+      </ul>
+      <p style="margin:0;">Los profes te observan y luego te ayudan a mejorar de nivel.</p>
     </div>
     <div class="pin-actions"><button class="pin-btn pin-ok" onclick="closeRendInfo()">Entendido</button></div>
   </div>
@@ -1271,7 +1277,7 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
 
 <div class="pin-overlay" id="liga-info-overlay">
   <div class="pin-modal" style="max-width:380px;">
-    <div class="pin-title">🏆 Cómo funciona el Ranking</div>
+    <div class="pin-title">🏆 Cómo funciona Mi Ranking</div>
     <div id="liga-info-body" style="font-size:13px;color:var(--text);line-height:1.6;text-align:left;"></div>
     <div class="pin-actions"><button class="pin-btn pin-ok" onclick="closeLigaInfo()">Entendido</button></div>
   </div>
@@ -3170,7 +3176,7 @@ function buildRubrica(){
     {id:'fisico', nombre:'Físico',   emoji:'⚡',col:'#1f9d57'},
     {id:'mental', nombre:'Mentalidad',emoji:'🧠',col:'#c2185b'}
   ];
-  const PERF_Q={'Construcción del punto':'¿Construye variando sus golpes?','Lectura del rival':'¿Ajusta su juego?','Gestión del marcador':'¿Sabe cuándo arriesgar?','Resistencia':'¿Se cansa rápido?'};
+  const PERF_Q={'Construcción del punto':'¿Construye con variación?','Velocidad':'¿Llega con equilibrio?','Resistencia':'¿Mantiene su nivel?','Tolerancia al error':'¿Resetea entre puntos?','Actitud':'¿Postura activa y positiva?'};
 
   // KPI por área — formato del Reporte mensual (ícono + barra + estado)
   const kpiCard=(a)=>{
@@ -3396,7 +3402,7 @@ function buildMonthCalendar(mk, monthSessions, pl){
     : `<div class="cal-dl-note">🔒 Disponible al cerrar el mes</div>`;
   return `<div class="cal-month-block">
     <div class="card cal-card">
-      <div class="card-title">${monthLabel(mk)} · ${n} sesión${n!==1?'es':''}</div>
+      <div class="card-title">${monthLabel(mk)}</div>
       <div class="cal-dows">${dows.map(d=>`<div class="cal-dow">${d}</div>`).join('')}</div>
       <div class="cal-grid">${cells}</div>
     </div>
@@ -4068,7 +4074,7 @@ function buildLiga(){
   let board=allPlayers.map(p=>scorePlayer(p, period)).filter(s=>s.sesiones>0);
   board.sort((a,b)=> b.total-a.total || b.asistencia-a.asistencia || b.actitud-a.actitud || b.torneos-a.torneos);
 
-  const explain=`<button class="lg-info-btn" onclick="openLigaInfo()">ℹ️ ¿Cómo funciona el Ranking?</button>`;
+  const explain=`<button class="lg-info-btn" onclick="openLigaInfo()">ℹ️ ¿Cómo funciona Mi Ranking?</button>`;
 
   const meScore=board.find(s=>s.name===currentPlayer);
   let meHTML;
