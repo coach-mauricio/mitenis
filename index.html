@@ -127,8 +127,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 #content-liga .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
 #content-liga .card{overflow:hidden;}
 #content-resumen .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
-.cz-radar, .cz-rank-card{overflow:hidden;}
-.cz-radar > .card-title, .cz-rank-card > .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
+.cz-radar, .cz-rank-card, .cz-areas{overflow:hidden;}
+.cz-radar > .card-title, .cz-rank-card > .card-title, .cz-areas > .card-title{color:#fff;margin:-16px -16px 14px;padding:10px 16px;border-radius:var(--radius) var(--radius) 0 0;}
 .lvl-pill{display:inline-block;padding:4px 14px;border-radius:999px;font-size:15px;font-weight:800;}
 /* Mi Perfil v6: info sola + fila 2 (Desempeño + Asistencia) */
 .perfil-info-solo{margin-bottom:14px;}
@@ -294,6 +294,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .cz-sort{display:inline-flex;gap:4px;margin-left:auto;}
 .cz-sort-btn{background:rgba(255,255,255,.15);color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;border:none;cursor:pointer;font-family:inherit;}
 .cz-sort-btn.active{background:#ffde59;color:#0a513a;font-weight:800;}
+/* Modo Profe v2: foco 2 cards + áreas compactas + modales */
+.foco2{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.foco2-card{flex:1;min-width:150px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 14px;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s;}
+.foco2-card:hover{border-color:var(--blue);transform:translateY(-1px);box-shadow:0 6px 16px rgba(10,81,58,.1);}
+.foco2-ic{font-size:22px;flex-shrink:0;line-height:1;}
+.foco2-tx{flex:1;min-width:0;display:flex;flex-direction:column;}
+.foco2-lbl{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#6b6f8a;}
+.foco2-val{font-size:15px;font-weight:900;color:#0a513a;}
+.foco2-chev{font-size:22px;color:#9aaa9a;flex-shrink:0;line-height:1;}
+.cz-areas{margin-bottom:12px;}
+.ag-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eef3e8;}
+.cz-areas .ag-row:last-child{border-bottom:none;}
+.ag-name{width:74px;font-size:12px;font-weight:800;color:#1a3325;flex-shrink:0;}
+.ag-bar{flex:1;height:7px;border-radius:99px;background:#e4ece0;overflow:hidden;}
+.ag-bar i{display:block;height:100%;border-radius:99px;}
+.ag-val{font-size:13px;font-weight:900;color:#1a3325;width:30px;text-align:right;}
+.ag-trend{font-size:10px;font-weight:700;width:38px;text-align:right;}
+.fk-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #eef3e8;font-size:13px;color:#20223a;}
+.fk-row:last-child{border-bottom:none;}
+.fk-lvl{font-size:11px;font-weight:800;padding:2px 9px;border-radius:99px;color:#161616;}
+.fk-lvl.lb1{background:var(--n1);} .fk-lvl.lb2{background:var(--n2);} .fk-lvl.lb3{background:var(--n3);}
+
 
 @media(min-width:620px){ .asist-donut{width:108px;height:108px;} .asist-count{font-size:13px;} .asist-right-lbl{font-size:11px;} .asist-bars-svg{height:110px;} .asist-streak{font-size:12px;} .asist-body{gap:20px;} }
 /* Mi Tenis: badge +1 a la derecha del nombre de la habilidad */
@@ -1285,6 +1307,20 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
   </div>
 </div>
 
+<div class="pin-overlay" id="foco-area-overlay" onclick="if(event.target===this)closeFocoArea()">
+  <div class="pin-modal" style="max-width:380px;">
+    <div class="pin-title">Área a reforzar</div>
+    <div id="foco-area-body" style="text-align:left;max-height:60vh;overflow-y:auto;margin-top:4px;"></div>
+    <div class="pin-actions"><button class="pin-btn pin-ok" onclick="closeFocoArea()">Entendido</button></div>
+  </div>
+</div>
+<div class="pin-overlay" id="foco-alum-overlay" onclick="if(event.target===this)closeFocoAlumnos()">
+  <div class="pin-modal" style="max-width:380px;">
+    <div class="pin-title">Alumnos para atender</div>
+    <div id="foco-alum-body" style="text-align:left;max-height:60vh;overflow-y:auto;margin-top:4px;"></div>
+    <div class="pin-actions"><button class="pin-btn pin-ok" onclick="closeFocoAlumnos()">Entendido</button></div>
+  </div>
+</div>
 <div class="pin-overlay" id="indice-info-overlay" onclick="if(event.target===this)closeIndiceInfo()">
   <div class="pin-modal" style="max-width:340px;">
     <div class="pin-title">¿Cómo se mide el índice?</div>
@@ -2168,6 +2204,10 @@ function openAppInfo(){ const ov=document.getElementById('app-info-overlay'); if
 function closeAppInfo(){ const ov=document.getElementById('app-info-overlay'); if(ov) ov.classList.remove('show'); }
 function openTorneosInfo(){ const ov=document.getElementById('torneos-info-overlay'); if(ov) ov.classList.add('show'); }
 function closeTorneosInfo(){ const ov=document.getElementById('torneos-info-overlay'); if(ov) ov.classList.remove('show'); }
+function openFocoArea(){ const o=document.getElementById('foco-area-overlay'); if(o) o.classList.add('show'); }
+function closeFocoArea(){ const o=document.getElementById('foco-area-overlay'); if(o) o.classList.remove('show'); }
+function openFocoAlumnos(){ const o=document.getElementById('foco-alum-overlay'); if(o) o.classList.add('show'); }
+function closeFocoAlumnos(){ const o=document.getElementById('foco-alum-overlay'); if(o) o.classList.remove('show'); }
 function openIndiceInfo(){ const o=document.getElementById('indice-info-overlay'); if(o) o.classList.add('show'); }
 function closeIndiceInfo(){ const o=document.getElementById('indice-info-overlay'); if(o) o.classList.remove('show'); }
 function openRendInfo(){ const ov=document.getElementById('rendimiento-info-overlay'); if(ov) ov.classList.add('show'); }
@@ -2785,14 +2825,39 @@ function buildCoach(){
   const _lowAttN=data.filter(d=>d.at && d.at.pct<50).length;
   const _dropN=data.filter(droppedOf).length;
   const _prevShortC=prevMonth?mLabelFull(prevMonth).split(' ')[0]:'';
-  const focoCard=`<div class="card foco-card">
-    <div class="card-title">Foco del mes</div>
-    <div class="foco-grid">
-      <div class="foco-item foco-area"><div class="foco-lbl">Área a reforzar</div><div class="foco-val">${_weakArea?_areaNom[_weakArea]+' <small>'+_weakVal.toFixed(1)+'</small>':'—'}</div></div>
-      <div class="foco-item foco-low"><div class="foco-lbl">Baja asistencia</div><div class="foco-val">${_lowAttN} ${_lowAttN===1?'alumno':'alumnos'}</div></div>
-      <div class="foco-item foco-drop"><div class="foco-lbl">Bajaron de nivel</div><div class="foco-val">${_dropN} ${_dropN===1?'alumno':'alumnos'}</div></div>
-    </div>
+  const _weakGroups=_weakArea?(RESUMEN_GROUPS[_weakArea]||[]).map(g=>{
+    const vals=players.map(p=>{ const ss=sessionsOf(p).filter(s=>monthKey(s)===curMonth); const vv=ss.map(s=>avgLvlKeys(s,g.keys)).filter(x=>x>0); return vv.length?vv.reduce((x,y)=>x+y,0)/vv.length:0; }).filter(x=>x>0);
+    const avg=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:0; return {nombre:g.nombre, avg};
+  }).filter(g=>g.avg>0).sort((a,b)=>a.avg-b.avg):[];
+  const _riskList=data.filter(atRiskOf).map(d=>{ const rs=[]; if(d.at&&d.at.pct<50) rs.push('Asistencia '+d.at.pct+'%'); if(droppedOf(d)) rs.push('Bajó de nivel'); return {name:d.p, rs:rs.join(' · ')}; });
+  const _atendN=_riskList.length;
+  const foco2=`<div class="foco2">
+    <button class="foco2-card" onclick="openFocoArea()">
+      <span class="foco2-ic" style="color:#0d5230;">🎯</span>
+      <span class="foco2-tx"><span class="foco2-lbl">Área a reforzar</span><span class="foco2-val">${_weakArea?_areaNom[_weakArea]+' · '+_weakVal.toFixed(1):'—'}</span></span>
+      <span class="foco2-chev">›</span>
+    </button>
+    <button class="foco2-card" onclick="openFocoAlumnos()">
+      <span class="foco2-ic" style="color:#dc2626;">⚠️</span>
+      <span class="foco2-tx"><span class="foco2-lbl">Alumnos para atender</span><span class="foco2-val" style="color:${_atendN?'#dc2626':'#16a34a'};">${_atendN} ${_atendN===1?'alumno':'alumnos'}</span></span>
+      <span class="foco2-chev">›</span>
+    </button>
   </div>`;
+  const _pcAvg={}; if(prevMonth){ areas.forEach(a=>{ const v=players.map(p=>areaAvgScope(p,prevMonth,a)).filter(x=>x>0); _pcAvg[a]=v.length?v.reduce((x,y)=>x+y,0)/v.length:0; }); }
+  const _lvlBar=v=> v<1.5?'#ffde59' : v<=2.3?'#a0b834' : '#148f67';
+  const _areaRows=areas.map(a=>{
+    const v=cAvg[a.id]||0, pv=_pcAvg[a.id]||0; const w=Math.max(4,Math.min(100,(v/3)*100));
+    const dd=(prevMonth && v>0 && pv>0)?(v-pv):null;
+    const tA=dd===null?'':(dd>=0.05?'↑':dd<=-0.05?'↓':'='); const tC=dd===null?'#9aaa9a':(dd>=0.05?'#16a34a':dd<=-0.05?'#dc2626':'#6b8a76');
+    return `<div class="ag-row"><span class="ag-name">${_areaNom[a.id]}</span><div class="ag-bar"><i style="width:${w}%;background:${_lvlBar(v)};"></i></div><span class="ag-val">${v>0?v.toFixed(1):'—'}</span><span class="ag-trend" style="color:${tC};">${tA}${dd!==null?(dd>=0?'+':'')+dd.toFixed(1):''}</span></div>`;
+  }).join('');
+  const areasCard=`<div class="card cz-areas"><div class="card-title">Áreas del grupo</div>${_areaRows}</div>`;
+  const _focoAreaBody = _weakArea
+    ? `<p style="margin:0 0 10px;color:var(--muted);font-size:12px;">El área más floja del grupo es <strong style="color:#0a513a;">${_areaNom[_weakArea]}</strong> (${_weakVal.toFixed(1)}/3). Habilidades a mejorar:</p>`+(_weakGroups.length?_weakGroups.map(g=>{const lv=Math.round(g.avg)||1;return `<div class="fk-row"><span>${g.nombre}</span><span class="fk-lvl lb${lv}">${lvlLabel(lv)} · ${g.avg.toFixed(1)}</span></div>`;}).join(''):'<div class="empty" style="color:var(--muted);">Sin datos de habilidades este mes.</div>')
+    : '<div class="empty" style="color:var(--muted);">Sin datos suficientes este mes.</div>';
+  const _focoAlumBody = _riskList.length
+    ? _riskList.map(r=>`<div class="fk-row"><span>${r.name}</span><span style="font-size:11px;color:#dc2626;font-weight:700;">${r.rs}</span></div>`).join('')
+    : '<div class="empty" style="color:#16a34a;">¡Ningún alumno requiere atención este mes!</div>';
   const obsCur=data.filter(d=>d.obs).length;
 
   let pAvg={}, pTot=0, obsPrev=0;
@@ -2918,15 +2983,19 @@ function buildCoach(){
       <div class="ph-ix-sub">${curMonth?mLabelFull(curMonth):''}</div>
     </div>
   </div>`;
+  const _rankCard=`<div class="card cz-rank-card"><div class="card-title">Ranking de alumnos · ${players.length}<span class="cz-sort"><button class="cz-sort-btn ${coachSort!=='atencion'?'active':''}" onclick="setCoachSort('rendimiento')">Rendimiento</button><button class="cz-sort-btn ${coachSort==='atencion'?'active':''}" onclick="setCoachSort('atencion')">Atención</button></span></div><div class="cz-rank-scroll">${studRows||'<div class="empty" style="color:var(--muted);">Sin alumnos en este filtro.</div>'}</div></div>`;
+  const _radarAcc=`<div class="acc evo-acc" style="margin-top:14px;">
+    <div class="acc-head" onclick="toggleAcc(this)"><span class="acc-title">📊 Comparación por categoría${curMonth?' · '+mLabelFull(curMonth):''}</span><span class="acc-chevron">▾</span></div>
+    <div class="acc-body"><div class="acc-body-inner"><div class="chart-wrap" style="height:320px;margin-top:6px;"><canvas id="ch-coach-radar"></canvas></div></div></div>
+  </div>`;
   el.innerHTML = `<div class="cz-filters">${monthChips}${catChips}</div>`
     + coachHero
-    + `<div class="metrics-row">${areaCards}</div>`
-    + focoCard
-    + `<div class="cz-bottom">
-        <div class="card cz-radar"><div class="card-title">Comparación por categoría${curMonth?' · '+mLabelFull(curMonth):''}</div><div class="chart-wrap" style="height:320px;margin-top:10px;"><canvas id="ch-coach-radar"></canvas></div></div>
-        <div class="card cz-rank-card"><div class="card-title">Ranking de alumnos · ${players.length}<span class="cz-sort"><button class="cz-sort-btn ${coachSort!=='atencion'?'active':''}" onclick="setCoachSort('rendimiento')">Rendimiento</button><button class="cz-sort-btn ${coachSort==='atencion'?'active':''}" onclick="setCoachSort('atencion')">Atención</button></span></div><div class="cz-rank-scroll">${studRows||'<div class="empty" style="color:var(--muted);">Sin alumnos en este filtro.</div>'}</div></div>
-      </div>`
-    ;
+    + foco2
+    + areasCard
+    + _rankCard
+    + _radarAcc;
+  { const _fab=document.getElementById('foco-area-body'); if(_fab) _fab.innerHTML=_focoAreaBody;
+    const _flb=document.getElementById('foco-alum-body'); if(_flb) _flb.innerHTML=_focoAlumBody; }
   if(charts['coachRadar']){ try{charts['coachRadar'].destroy();}catch(e){} }
   const _cv=document.getElementById('ch-coach-radar');
   if(_cv && catData.length){
