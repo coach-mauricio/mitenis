@@ -276,6 +276,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .asist-right{flex:1 1 auto;min-width:0;}
 .asist-right-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
 .asist-bars-svg{width:100%;height:98px;display:block;}
+.kpi-info{margin-left:auto;width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:800;font-style:italic;font-family:Georgia,serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.kpi-info:hover{background:rgba(255,255,255,.28);}
+@media(min-width:620px){ .asist-donut{width:108px;height:108px;} .asist-count{font-size:13px;} .asist-right-lbl{font-size:11px;} .asist-bars-svg{height:110px;} .asist-streak{font-size:12px;} .asist-body{gap:20px;} }
 /* Mi Tenis: badge +1 a la derecha del nombre de la habilidad */
 .rise-badge{display:inline-block;font-size:10px;font-weight:800;color:#16a34a;background:#dcfce7;padding:1px 7px;border-radius:999px;margin-left:7px;vertical-align:middle;}
 @media(max-width:560px){ .perfil-row1{flex-wrap:nowrap;} .asist-body{gap:10px;} .asist-left{min-width:78px;} .asist-donut{width:74px;height:74px;} }
@@ -1265,6 +1268,15 @@ button.cal-cell:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(10,8
   </div>
 </div>
 
+<div class="pin-overlay" id="indice-info-overlay" onclick="if(event.target===this)closeIndiceInfo()">
+  <div class="pin-modal" style="max-width:340px;">
+    <div class="pin-title">¿Cómo se mide el índice?</div>
+    <div style="font-size:14px;color:var(--text);line-height:1.6;text-align:left;margin-top:4px;">
+      <p style="margin:0;">Escala <strong>1 a 3</strong> · promedio de las 4 áreas (Técnica, Táctica, Física y Mental).</p>
+    </div>
+    <div class="pin-actions"><button class="pin-btn pin-ok" onclick="closeIndiceInfo()">Entendido</button></div>
+  </div>
+</div>
 <div class="pin-overlay" id="rendimiento-info-overlay" onclick="if(event.target===this)closeRendInfo()">
   <div class="pin-modal" style="max-width:380px;">
     <div class="pin-title">Cómo se mide Mi Tenis</div>
@@ -2138,6 +2150,8 @@ function openAppInfo(){ const ov=document.getElementById('app-info-overlay'); if
 function closeAppInfo(){ const ov=document.getElementById('app-info-overlay'); if(ov) ov.classList.remove('show'); }
 function openTorneosInfo(){ const ov=document.getElementById('torneos-info-overlay'); if(ov) ov.classList.add('show'); }
 function closeTorneosInfo(){ const ov=document.getElementById('torneos-info-overlay'); if(ov) ov.classList.remove('show'); }
+function openIndiceInfo(){ const o=document.getElementById('indice-info-overlay'); if(o) o.classList.add('show'); }
+function closeIndiceInfo(){ const o=document.getElementById('indice-info-overlay'); if(o) o.classList.remove('show'); }
 function openRendInfo(){ const ov=document.getElementById('rendimiento-info-overlay'); if(ov) ov.classList.add('show'); }
 function closeRendInfo(){ const ov=document.getElementById('rendimiento-info-overlay'); if(ov) ov.classList.remove('show'); }
 function openRegistroInfo(){ const ov=document.getElementById('registro-info-overlay'); if(ov) ov.classList.add('show'); }
@@ -3134,7 +3148,7 @@ function buildResumen(){
   </div>
   <div class="perfil-row2">
     <div class="card perfil-kpi2">
-      <div class="card-title">Mi Desempeño</div>
+      <div class="card-title">Mi Desempeño <button class="kpi-info" onclick="openIndiceInfo()" aria-label="Cómo se mide el índice">i</button></div>
       <div class="pk2-top">
         <span class="pk2-idx" style="color:${_dn.colLight};">${tot>0?tot.toFixed(1):'—'}<small>/3</small></span>
         <span class="lvl-pill" style="background:${_dn.bg};color:${_dn.txt};">${_dn.lbl}</span>
