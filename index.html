@@ -3773,6 +3773,29 @@ function buildMonthReportHTML(name, mk){
         return conn + t;
       }).join(' ');
 
+  // COMENTARIO DEL PROFE — cuentito preautomatizado
+  const _fn = (name.split(' ')[0]) || 'Jugador';
+  const _attMs = attMonths(name);
+  const _prevAttMk = (_attMs.indexOf(mk)>0) ? _attMs[_attMs.indexOf(mk)-1] : null;
+  const _prevAtt = _prevAttMk ? attendanceFor(name,_prevAttMk) : null;
+  let _asisFrase = '';
+  if(at && at.objetivo>0 && _prevAtt && _prevAtt.objetivo>0){
+    const _d = at.pct - _prevAtt.pct;
+    _asisFrase = Math.abs(_d)<1
+      ? 'tu asistencia a clases se mantuvo estable respecto al mes pasado'
+      : 'tu asistencia a clases ' + (_d>0?'subió':'bajó') + ' un ' + Math.abs(_d) + '% respecto al mes pasado';
+  } else if(at && at.objetivo>0){
+    _asisFrase = 'registraste una asistencia del ' + at.pct + '% este mes';
+  }
+  const _topArea = [...areas].filter(a=>areaAvg[a.id]>0).sort((x,y)=>areaAvg[y.id]-areaAvg[x.id])[0] || null;
+  const _low2 = [...allGroups].sort((x,y)=> (x.curLv-y.curLv) || (x.cur-y.cur)).slice(0,2).map(g=>g.nombre);
+  const _low2Txt = _low2.length===2 ? (_low2[0]+' y '+_low2[1]) : (_low2[0]||'');
+  let coachStory = 'Hola ' + _fn + ', te felicito por estos días de trabajo.';
+  if(_asisFrase) coachStory += ' Este mes ' + _asisFrase + '.';
+  if(_topArea) coachStory += ' Tu área de ' + _topArea.nombre + ' es tu fortaleza y hay que mantenerla.';
+  if(_low2Txt) coachStory += ' Recomendamos para el próximo mes trabajar ' + _low2Txt + '.';
+  coachStory += ' Vamos por más ' + _fn + ' 💪.';
+
   // ÚLTIMA SESIÓN
   const last=ms.length?ms[ms.length-1]:null;
   let lastFecha='', lastDesc='', lastTipo='';
@@ -4006,13 +4029,11 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a3d2a;color:#1326
       <div class="panel">
         <div class="ph"><span class="ph-ic">⭐</span><span class="ph-tx">Fortalezas del mes</span></div>
         <div class="pb">
-        ${fortItems.length
-          ? fortItems.map((t,i)=>`<div class="str"><div class="str-ic str-num">${i+1}</div><div><div class="str-t">${esc(t)}</div></div></div>`).join('')
-          : (fortalezas.length?fortalezas.map(g=>`<div class="str">
+        ${fortalezas.length?fortalezas.map(g=>`<div class="str">
           <div class="str-ic">${g.area.emoji}</div>
           <div><div class="str-t">${esc(g.nombre)} · ${lvlLabel(g.curLv)}</div>
           <div class="str-s">${esc(g.desc||lvlSub(g.curLv))}</div></div>
-        </div>`).join(''):'<div class="str-s">Aún sin datos suficientes este mes.</div>')}
+        </div>`).join(''):'<div class="str-s">Aún sin datos suficientes este mes.</div>'}
         </div>
       </div>
       <div class="panel">
@@ -4031,7 +4052,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a3d2a;color:#1326
       <div class="panel">
         <div class="ph"><span class="ph-ic">💬</span><span class="ph-tx">Comentario del Profe</span></div>
         <div class="pb">
-          <div class="coach-q">${coachQuote?esc(coachQuote):'Buen mes de trabajo. Seguimos construyendo el proceso de '+esc(name.split(' ')[0])+' con foco y constancia.'}</div>
+          <div class="coach-q">${esc(coachStory)}</div>
           <div class="coach-sig">
             <div class="coach-av">PM</div>
             <div class="coach-nm">Profe Mauri</div>
