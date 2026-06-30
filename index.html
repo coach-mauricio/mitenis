@@ -2055,6 +2055,7 @@ async function init(){
 // SELECT PLAYER
 // ══════════════════════════════════════
 let __pendingPlayer=null, __pinMode='player';
+let __pendingPreview=null;
 function selectPlayer(name){
   const info = appMode==='torneos' ? getAdultInfo(name) : getInfo(name);
   const pinCol = appMode==='torneos' ? ADULT.pin : INFO.pin;
@@ -2074,6 +2075,11 @@ function closePin(){ document.getElementById('pin-overlay').classList.remove('sh
   if(__pendingCircuito){ __pendingCircuito=null; circuitoPlayer=null; if(circuitoTab==='jugadores') buildCircuitoJugadores(); } }
 function submitPin(){
   const val=(document.getElementById('pin-input').value||'').trim();
+  if(__pinMode==='preview'){
+    if(val===coachPin()){ document.getElementById('pin-overlay').classList.remove('show'); const _pp=__pendingPreview; __pendingPreview=null; if(_pp) downloadMonthReport(_pp.name,_pp.mk); }
+    else { document.getElementById('pin-err').textContent='PIN incorrecto. Probá de nuevo.'; }
+    return;
+  }
   if(__pinMode==='coach'){
     if(val===coachPin()){ document.getElementById('pin-overlay').classList.remove('show'); openCoachView(); }
     else { document.getElementById('pin-err').textContent='PIN incorrecto. Probá de nuevo.'; }
@@ -2846,7 +2852,7 @@ function buildCoach(){
     </button>
   </div>`;
   const _pcAvg={}; if(prevMonth){ areas.forEach(a=>{ const v=players.map(p=>areaAvgScope(p,prevMonth,a)).filter(x=>x>0); _pcAvg[a]=v.length?v.reduce((x,y)=>x+y,0)/v.length:0; }); }
-  const _lvlBar=v=> v<1.5?'#ffde59' : v<=2.3?'#a0b834' : '#148f67';
+  const _lvlBar=v=> v<1.5?'#ffde59' : v<=2.5?'#a0b834' : '#148f67';
   const _areaRows=areas.map(a=>{
     const v=cAvg[a]||0, pv=_pcAvg[a]||0; const w=Math.max(4,Math.min(100,(v/3)*100));
     const dd=(prevMonth && v>0 && pv>0)?(v-pv):null;
@@ -3050,8 +3056,8 @@ function areaAvgForSessions(list, areaId){
 const AREA_COL={tecnica:'#0a513a',tactica:'#e0a200',fisico:'#16a34a',mental:'#d6336c'};
 // Desempeño general — umbrales: BIEN <1.7 · MUY BIEN 1.7-2.3 · EXCELENTE >2.3
 function desempenoNivel(o){
-  if(o>2.3) return {lbl:'EXCELENTE', msg:'Gran mes de trabajo. ¡A sostenerlo!', bg:'#148f67', txt:'#161616', col:'#148f67', colLight:'#148f67', thumbs:3};
-  if(o>=1.7) return {lbl:'MUY BIEN', msg:'Buen mes de trabajo. Vamos por más.', bg:'#a0b834', txt:'#161616', col:'#a0b834', colLight:'#a0b834', thumbs:2};
+  if(o>2.5) return {lbl:'EXCELENTE', msg:'Gran mes de trabajo. ¡A sostenerlo!', bg:'#148f67', txt:'#161616', col:'#148f67', colLight:'#148f67', thumbs:3};
+  if(o>=1.5) return {lbl:'MUY BIEN', msg:'Buen mes de trabajo. Vamos por más.', bg:'#a0b834', txt:'#161616', col:'#a0b834', colLight:'#a0b834', thumbs:2};
   return {lbl:'BIEN', msg:'Seguimos sumando, paso a paso.', bg:'#ffde59', txt:'#161616', col:'#ffde59', colLight:'#ffde59', thumbs:1};
 }
 function _smoothPath(pts){
@@ -3234,7 +3240,7 @@ function buildResumen(){
   const _barSeries=attMonths(currentPlayer).map(mk=>{ const a=attendanceFor(currentPlayer,mk); return a?{m:monthLabel(mk).slice(0,3),val:Math.min(a.objetivo|0,a.cumplidas|0),obj:a.objetivo|0}:null; }).filter(Boolean).slice(-6);
   const _ini=currentPlayer.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const _avc=avatarColor(currentPlayer);
-  const _metaParts=[ (info&&info[INFO.brazo])||'', (info&&info[INFO.altura])||'', (info&&info[INFO.edad])?info[INFO.edad]+' años':'' ].filter(Boolean).join(' · ');
+  const _metaParts=[ (info&&info[INFO.brazo])||'', (info&&info[INFO.altura])?(String(info[INFO.altura]).replace(/\s*m\.?\s*$/i,'').trim()+' m'):'', (info&&info[INFO.edad])?info[INFO.edad]+' años':'' ].filter(Boolean).join(' · ');
   const _obj=(info&&info[INFO.objetivo])||'';
   const _ptotV=(function(){ const v=areas.map(a=>prevAvgs[a.id]).filter(x=>x>0); return v.length?v.reduce((x,y)=>x+y,0)/v.length:0; })();
   const _dTot=(prevMonth && tot>0 && _ptotV>0)?(tot-_ptotV):null;
@@ -3243,9 +3249,9 @@ function buildResumen(){
   const _dTxt=_dTot===null?'':((_dTot>=0?'+':'')+_dTot.toFixed(1)+' vs '+(prevLbl?prevLbl.split(' ')[0]:''));
   let _progHTML='';
   if(tot>0){
-    if(tot<1.7){ const pw=Math.max(4,Math.min(100,(tot/1.7)*100)); _progHTML='<div class="pk2-prog"><div class="pk2-prog-lbl"><span>Camino a Muy Bien</span><span>'+tot.toFixed(1)+' / 1.7</span></div><div class="pk2-bar"><i style="width:'+pw.toFixed(0)+'%;"></i></div></div>'; }
-    else if(tot<=2.3){ const pw=Math.max(4,Math.min(100,(tot/2.4)*100)); _progHTML='<div class="pk2-prog"><div class="pk2-prog-lbl"><span>Camino a Excelente</span><span>'+tot.toFixed(1)+' / 2.4</span></div><div class="pk2-bar"><i style="width:'+pw.toFixed(0)+'%;"></i></div></div>'; }
-    else { _progHTML='<div class="pk2-prog"><div class="pk2-prog-lbl" style="color:#148f67;"><span>¡Nivel Excelente!</span></div><div class="pk2-bar"><i style="width:100%;"></i></div></div>'; }
+    if(tot<1.5){ const pw=Math.max(4,Math.min(100,(tot/1.5)*100)); _progHTML='<div class="pk2-prog"><div class="pk2-prog-lbl"><span>Camino a Muy Bien</span><span>'+tot.toFixed(1)+' / 1.5</span></div><div class="pk2-bar"><i style="width:'+pw.toFixed(0)+'%;background:'+_dn.bg+';"></i></div></div>'; }
+    else if(tot<=2.5){ const pw=Math.max(4,Math.min(100,(tot/2.6)*100)); _progHTML='<div class="pk2-prog"><div class="pk2-prog-lbl"><span>Camino a Excelente</span><span>'+tot.toFixed(1)+' / 2.6</span></div><div class="pk2-bar"><i style="width:'+pw.toFixed(0)+'%;background:'+_dn.bg+';"></i></div></div>'; }
+    else { _progHTML='<div class="pk2-prog"><div class="pk2-prog-lbl" style="color:'+_dn.bg+';"><span>¡Nivel Excelente!</span></div><div class="pk2-bar"><i style="width:100%;background:'+_dn.bg+';"></i></div></div>'; }
   }
   const _attM=attMonths(currentPlayer); let _streak=0;
   let _stStart=_attM.length-1;
@@ -3572,10 +3578,10 @@ function buildMonthCalendar(mk, monthSessions, pl){
         ${dayCount[day]>1?`<span class="cal-badge">${dayCount[day]}</span>`:''}
       </button>`;
     } else if(isLast){
-      // Mes en curso, sin sesión ese día: descarga bloqueada hasta que termine el mes
-      cells+=`<div class="cal-cell cal-dl-lock" title="El reporte estará disponible cuando termine el mes">
-        <span class="cal-num">${day}</span><span class="cal-dlico">🔒</span>
-      </div>`;
+      // Mes en curso: el profe puede ver una vista previa (con PIN); el alumno lo verá al cerrar el mes
+      cells+=`<button class="cal-cell cal-dl cal-prev" onclick="previewMonthReport('${pl}','${mk}')" title="Vista previa del reporte (profe)">
+        <span class="cal-num">${day}</span><span class="cal-dlico">👁</span>
+      </button>`;
     } else {
       cells+=`<div class="cal-cell"><span class="cal-num">${day}</span></div>`;
     }
@@ -3584,7 +3590,8 @@ function buildMonthCalendar(mk, monthSessions, pl){
   const n=monthSessions.length;
   const footer = ended
     ? `<button class="cal-dl-btn" onclick="downloadMonthReport('${pl}','${mk}')" title="Descargar el reporte completo de ${monthLabel(mk)}">📄 Descargar reporte</button>`
-    : `<div class="cal-dl-note">🔒 Disponible al cerrar el mes</div>`;
+    : `<button class="cal-dl-btn cal-prev-btn" onclick="previewMonthReport('${pl}','${mk}')" title="Vista previa del reporte (solo profe, con PIN)">👁 Vista previa (profe)</button>
+       <div class="cal-dl-note cal-prev-note">El alumno verá el reporte al cerrar el mes</div>`;
   return `<div class="cal-month-block">
     <div class="card cal-card">
       <div class="card-title">${monthLabel(mk)}</div>
@@ -3629,7 +3636,7 @@ function buildHistorial(){
   const infoBtn=`<button class="lg-info-btn" onclick="openRegistroInfo()">ℹ️ ¿Cómo funcionan los Informes?</button>`;
   const legend=`<div class="cal-legend" style="margin:18px 0 12px;">
     <span><span class="lg-swatch" style="background:var(--ball);"></span> Descargar reporte (mes cerrado)</span>
-    <span><span class="lg-swatch" style="background:var(--surf2);border:1px dashed var(--border);"></span> Reporte 🔒</span>
+    <span><span class="lg-swatch" style="background:var(--ball);"></span> 👁 Vista previa profe (mes en curso)</span>
   </div>`;
   const calsHTML=months.map(mk=>buildMonthCalendar(mk, byMonth[mk], pl)).join('');
   el.innerHTML=infoBtn+`<div class="cal-months">${calsHTML}</div>`;
@@ -3637,6 +3644,16 @@ function buildHistorial(){
 }
 
 // ── Reporte de Rendimiento mensual (descarga HTML autónomo) ──
+function previewMonthReport(name, mk){
+  const pin=coachPin();
+  if(!pin){ downloadMonthReport(name, mk); return; }
+  __pinMode='preview'; __pendingPreview={name:name, mk:mk};
+  const sub=document.getElementById('pin-sub'); if(sub) sub.textContent='PIN de profe · vista previa del mes en curso';
+  const inp=document.getElementById('pin-input'); if(inp) inp.value='';
+  const err=document.getElementById('pin-err'); if(err) err.textContent='';
+  document.getElementById('pin-overlay').classList.add('show');
+  setTimeout(()=>{try{inp.focus();}catch(e){}},60);
+}
 function downloadMonthReport(name, mk){
   try{
     const html=buildMonthReportHTML(name, mk);
@@ -3661,6 +3678,7 @@ function buildMonthReportHTML(name, mk){
   const color=avatarColor(name);
   const catCol=catColor(cat)||'#0d5230';
   const hoy=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
+  const _provisional=!monthEnded(mk);
 
   const areas=[
     {id:'tecnica',nombre:'Técnica',  emoji:'🎾',col:'#0d5230'},
@@ -3919,6 +3937,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a3d2a;color:#1326
 </style></head><body>
 <button class="no-print" onclick="window.print()">🖨️ Guardar como PDF / Imprimir</button>
 <div class="page">
+  ${_provisional?'<div style="margin:0 0 14px;padding:10px 14px;border-radius:10px;background:#fff4d2;border:1px solid #e8c23e;color:#5b5400;font-size:13px;font-weight:600;text-align:center;line-height:1.4;">👁 Vista previa · mes en curso — datos provisionales, pueden cambiar hasta el cierre del mes.</div>':''}
 
   <!-- HEADER -->
   <div class="hd">
