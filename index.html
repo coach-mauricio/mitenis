@@ -529,12 +529,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .ph-kpis{display:flex;align-items:stretch;gap:20px;margin-top:16px;flex-wrap:wrap;}
 .ph-kpi{display:flex;flex-direction:column;justify-content:center;}
 .coach-hero .ph-kpi{flex:1 1 0;min-width:0;}
-.ph-d{font-size:9px;font-weight:700;margin-left:5px;white-space:nowrap;vertical-align:middle;opacity:.9;}
+.ph-d{font-size:8px;font-weight:700;margin-left:5px;white-space:nowrap;vertical-align:middle;opacity:.9;}
 .ph-d.up{color:#9ff5c4;}.ph-d.down{color:#ffb3b3;}.ph-d.flat{color:rgba(255,255,255,.45);}
 .ph-kpi label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.55);margin-bottom:4px;}
-.ph-kpi span{font-size:19px;font-weight:800;color:#fff;line-height:1;}
+.ph-kpi span{font-size:15px;font-weight:800;color:#fff;line-height:1;}
 .ph-kpi-sep{width:1px;background:rgba(255,255,255,.2);margin:2px 2px;}
-@media(max-width:560px){ .ph-kpi span{font-size:16px;} .coach-hero .ph-kpis{flex-direction:column;align-items:stretch;gap:9px;} .coach-hero .ph-kpi{flex:1 1 auto;} .coach-hero .ph-kpi-sep{width:100%;height:1px;margin:2px 0;} .ph-d{font-size:9px;margin-left:4px;} }
+@media(max-width:560px){ .ph-kpi span{font-size:14px;} .coach-hero .ph-kpis{flex-direction:column;align-items:stretch;gap:9px;} .coach-hero .ph-kpi{flex:1 1 auto;} .coach-hero .ph-kpi-sep{width:100%;height:1px;margin:2px 0;} .ph-d{font-size:8px;margin-left:4px;} }
 
 @media(max-width:560px){
   .perfil-hero{padding:16px;gap:13px;}
@@ -2991,7 +2991,7 @@ function buildCoach(){
       <div class="ph-ix-sub">${curMonth?mLabelFull(curMonth):''}</div>
     </div>
   </div>`;
-  const _rankCard=`<div class="card cz-rank-card"><div class="card-title">Ranking de alumnos · ${players.length}<span class="cz-sort"><button class="cz-sort-btn ${coachSort!=='atencion'?'active':''}" onclick="setCoachSort('rendimiento')">Rendimiento</button><button class="cz-sort-btn ${coachSort==='atencion'?'active':''}" onclick="setCoachSort('atencion')">Atención</button></span></div><div class="cz-rank-scroll">${studRows||'<div class="empty" style="color:var(--muted);">Sin alumnos en este filtro.</div>'}</div></div>`;
+  const _rankCard=`<div class="acc cz-rank-acc" style="margin-top:14px;"><div class="acc-head" onclick="toggleAcc(this)"><span class="acc-title">🏆 Ranking de alumnos · ${players.length}</span><span class="acc-chevron">▾</span></div><div class="acc-body"><div class="acc-body-inner"><div class="cz-rank-scroll">${studRows||'<div class="empty" style="color:var(--muted);">Sin alumnos en este filtro.</div>'}</div></div></div></div>`;
   const _radarAcc=`<div class="acc evo-acc" style="margin-top:14px;">
     <div class="acc-head" onclick="toggleAcc(this)"><span class="acc-title">📊 Comparación por categoría${curMonth?' · '+mLabelFull(curMonth):''}</span><span class="acc-chevron">▾</span></div>
     <div class="acc-body"><div class="acc-body-inner"><div class="chart-wrap" style="height:320px;margin-top:6px;"><canvas id="ch-coach-radar"></canvas></div></div></div>
@@ -3775,26 +3775,16 @@ function buildMonthReportHTML(name, mk){
 
   // COMENTARIO DEL PROFE — cuentito preautomatizado
   const _fn = (name.split(' ')[0]) || 'Jugador';
-  const _attMs = attMonths(name);
-  const _prevAttMk = (_attMs.indexOf(mk)>0) ? _attMs[_attMs.indexOf(mk)-1] : null;
-  const _prevAtt = _prevAttMk ? attendanceFor(name,_prevAttMk) : null;
-  let _asisFrase = '';
-  if(at && at.objetivo>0 && _prevAtt && _prevAtt.objetivo>0){
-    const _d = at.pct - _prevAtt.pct;
-    _asisFrase = Math.abs(_d)<1
-      ? 'tu asistencia a clases se mantuvo estable respecto al mes pasado'
-      : 'tu asistencia a clases ' + (_d>0?'subió':'bajó') + ' un ' + Math.abs(_d) + '% respecto al mes pasado';
-  } else if(at && at.objetivo>0){
-    _asisFrase = 'registraste una asistencia del ' + at.pct + '% este mes';
-  }
   const _topArea = [...areas].filter(a=>areaAvg[a.id]>0).sort((x,y)=>areaAvg[y.id]-areaAvg[x.id])[0] || null;
-  const _low2 = [...allGroups].sort((x,y)=> (x.curLv-y.curLv) || (x.cur-y.cur)).slice(0,2).map(g=>g.nombre);
-  const _low2Txt = _low2.length===2 ? (_low2[0]+' y '+_low2[1]) : (_low2[0]||'');
-  let coachStory = 'Hola ' + _fn + ', te felicito por estos días de trabajo.';
-  if(_asisFrase) coachStory += ' Este mes ' + _asisFrase + '.';
-  if(_topArea) coachStory += ' Tu área de ' + _topArea.nombre + ' es tu fortaleza y hay que mantenerla.';
-  if(_low2Txt) coachStory += ' Recomendamos para el próximo mes trabajar ' + _low2Txt + '.';
-  coachStory += ' Vamos por más ' + _fn + ' 💪.';
+  const _compromiso = (actitudExcelente(name,mk) || (at&&at.met)) ? 'alto' : ((at&&at.pct>=60) ? 'medio' : 'en crecimiento');
+  const _joinES = (arr)=> arr.length<=1 ? (arr[0]||'') : (arr.slice(0,-1).join(', ') + ' y ' + arr[arr.length-1]);
+  const _aspList = aspItems.length ? aspItems : (foco ? [foco.nombre] : []);
+  const _aspTxt = _joinES(_aspList);
+  let coachStory = 'Hola ' + esc(_fn) + ', te felicito por estos días de trabajo.';
+  coachStory += ' Este mes tuviste un compromiso ' + _compromiso + ' de asistencia a clases';
+  coachStory += _topArea ? (' y tu área de mayor fortaleza fue: <b>' + esc(_topArea.nombre) + '</b> 💪.') : ' 💪.';
+  if(_aspTxt) coachStory += ' Recomendamos para el próximo mes seguir trabajando ' + esc(_aspTxt) + '.';
+  coachStory += ' Vamos por más ' + esc(_fn) + ' 🎾.';
 
   // ÚLTIMA SESIÓN
   const last=ms.length?ms[ms.length-1]:null;
@@ -4052,7 +4042,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:#0a3d2a;color:#1326
       <div class="panel">
         <div class="ph"><span class="ph-ic">💬</span><span class="ph-tx">Comentario del Profe</span></div>
         <div class="pb">
-          <div class="coach-q">${esc(coachStory)}</div>
+          <div class="coach-q">${coachStory}</div>
           <div class="coach-sig">
             <div class="coach-av">PM</div>
             <div class="coach-nm">Profe Mauri</div>
