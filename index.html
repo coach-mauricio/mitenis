@@ -290,7 +290,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .foco-val small{font-size:12px;color:#9aaa9a;font-weight:700;margin-left:3px;}
 .cz-trend{font-size:10.5px;font-weight:700;margin-top:2px;}
 .cz-row.cz-risk{background:#fef5f5;border-left:3px solid #dc2626;border-radius:0 8px 8px 0;padding-left:9px;margin-left:-9px;}
-.cz-att-chip{background:#fdeced;color:#dc2626;font-size:9px;font-weight:800;padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;}
+.cz-att-chip{background:#fdeced;color:#dc2626;font-size:9px;font-weight:800;padding:1px 7px;border-radius:99px;margin-left:0;vertical-align:middle;flex-shrink:0;white-space:nowrap;}
 .cz-sort{display:inline-flex;gap:4px;margin-left:auto;}
 .cz-sort-btn{background:rgba(255,255,255,.15);color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;border:none;cursor:pointer;font-family:inherit;}
 .cz-sort-btn.active{background:#ffde59;color:#0a513a;font-weight:800;}
@@ -797,7 +797,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .cz-row:last-child{border-bottom:none;}
 .cz-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;box-shadow:inset 0 3px 6px rgba(255,255,255,.32),inset 0 -4px 8px rgba(0,0,0,.16);}
 .cz-info{flex:1;min-width:0;}
-.cz-name{font-size:13px;font-weight:600;color:var(--text);}
+.cz-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;min-width:0;}
+.cz-name-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .cz-sub{font-size:10.5px;color:var(--muted);margin-top:2px;}
 .cz-right{text-align:right;flex-shrink:0;}
 .cz-score{font-size:16px;font-weight:800;color:var(--text);}
@@ -874,7 +875,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* === v18: Modo Profe (highlight + ranking compacto) === */
 .mc-hl{background:#ffde59;border-color:#e8c23e;}
 .cz-row{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--border);}
-.cz-name{font-size:14px;font-weight:600;color:var(--text);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cz-name{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;min-width:0;}
 .cz-score{font-size:23px;font-weight:800;color:var(--text);line-height:1;}
 .cz-score span{font-size:11px;color:var(--hint);font-weight:600;}
 .cz-at{margin-left:auto;font-size:16px;font-weight:800;}
@@ -964,6 +965,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .cz-rank-acc .acc-sub{font-size:13px;font-weight:500;color:var(--muted);margin-left:4px;}
 .cz-rank-acc .acc-body-inner{padding:2px 14px 14px;}
 .cz-rank-acc .cz-rank-scroll{max-height:360px;margin-top:0;}
+.cz-rank-acc .acc-head{background:#0a513a;padding:13px 16px;}
+.cz-rank-acc .acc-head:hover{background:#0d6648;}
+.cz-rank-acc .acc-title{color:#fff;}
+.cz-rank-acc .acc-chevron{color:#ffde59;}
 .cz-cat{border:1.5px solid var(--border);background:var(--surf);color:var(--muted);font-weight:700;font-size:12px;padding:8px 14px;border-radius:12px;cursor:pointer;transition:all .15s;}
 .cz-cat:hover{background:var(--surf2);border-color:var(--blue);color:var(--blue);}
 .cz-cat.active{background:#0d4b34;color:#fff;border-color:#0d4b34;font-weight:700;}
@@ -990,7 +995,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .mc-info{position:relative;display:inline-block;}
 #coach .metric-card:hover,#coach .metric-card:has(.mc-info.open){z-index:30;}
 .cz-pair{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;align-items:stretch;margin-bottom:14px;}
-.cz-name-cell{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.cz-name-cell{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto;}
 .cz-act-tag{font-size:10px;font-weight:700;color:#a07800;display:flex;align-items:center;gap:3px;line-height:1.2;}
 .cz-pair .coach-badge,.cz-pair>.card{margin-bottom:0;}
 @media(max-width:600px){.cz-pair{grid-template-columns:1fr;}}
@@ -2941,7 +2946,7 @@ function buildCoach(){
       <div class="cz-rank">${i+1}</div>
       <div class="cz-av" style="background:${avatarColor(d.p)};"></div>
       <div class="cz-name-cell">
-        <div class="cz-name">${d.p}${risk?' <span class="cz-att-chip">Atención</span>':''}</div>
+        <div class="cz-name"><span class="cz-name-txt">${d.p}</span>${risk?'<span class="cz-att-chip">Atención</span>':''}</div>
         <div class="cz-trend" style="color:${tCol};">${tArrow} ${tTxt}</div>
       </div>
       <div class="cz-ind">
